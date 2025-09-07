@@ -1,5 +1,224 @@
 /* Option Chain Trading Interface - Responsive CSS Framework */
 
+/* New Options Table Styles */
+.options-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+    background: white;
+}
+
+.options-table th {
+    background-color: var(--gray-100);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: var(--font-size-xs);
+    border-bottom: 2px solid var(--gray-300);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.options-table td {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--gray-200);
+    font-size: var(--font-size-sm);
+}
+
+.strike-header {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 700;
+    min-width: 80px;
+}
+
+.strike-price {
+    font-weight: 700;
+    font-size: var(--font-size-base);
+    color: var(--dark-color);
+    cursor: pointer;
+    padding: 1rem 0.5rem !important;
+    background-color: var(--gray-50);
+}
+
+.option-row {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.option-row:hover {
+    background-color: var(--gray-100);
+}
+
+.option-row:hover .strike-price {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.call-oi, .put-oi {
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.call-ltp, .put-ltp {
+    font-weight: 600;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--gray-600);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    flex: 1;
+    max-width: 80px;
+}
+
+.nav-item:hover {
+    color: var(--primary-color);
+    background-color: var(--gray-100);
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-label {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+/* Control Panel Styles */
+.control-panel {
+    background: linear-gradient(135deg, var(--light-color), white);
+}
+
+.underlying-section {
+    margin-bottom: 1rem;
+}
+
+.selected-stock {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+}
+
+.price-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.price {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+}
+
+.change {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.underlying-selector {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--gray-100);
+    border-radius: var(--border-radius);
+}
+
+.basket-icon {
+    font-size: 1.5rem;
+    position: relative;
+    user-select: none;
+}
+
+.basket-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Table Responsive */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .options-table th,
+    .options-table td {
+        padding: 0.5rem 0.25rem;
+        font-size: var(--font-size-xs);
+    }
+    
+    .strike-price {
+        padding: 0.75rem 0.25rem !important;
+        font-size: var(--font-size-sm);
+    }
+    
+    .price {
+        font-size: var(--font-size-base);
+    }
+}
+
+/* Modal Enhancements */
+.modal-mobile .underlying-item {
+    transition: background-color 0.2s ease;
+}
+
+.modal-mobile .underlying-item:hover {
+    background-color: var(--gray-100);
+}
+
+.underlying-item .border {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.underlying-item .border:hover {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+}
+
 /* CSS Reset and Base Styles */
 * {
     margin: 0;

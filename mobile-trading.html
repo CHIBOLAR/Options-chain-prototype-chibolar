@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Trading Mode - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks/options..." id="stockSearch" autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm" id="helpBtn">Help</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Underlying Selection & Mode Toggle -->
+    <section class="control-panel" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <!-- Underlying Selection -->
+            <div class="underlying-section mb-3">
+                <div id="selectedUnderlying" class="selected-stock" style="display: none;">
+                    <div class="d-flex justify-between align-center">
+                        <div>
+                            <h2 class="fw-bold" id="underlyingSymbol">NIFTY</h2>
+                            <div class="price-info">
+                                <span class="price" id="underlyingPrice">19,450.25</span>
+                                <span class="change" id="underlyingChange">+125.30 (+0.65%)</span>
+                            </div>
+                            <div class="iv-info text-muted">
+                                IV Rank: <span class="fw-bold">32%</span> | Volume: <span class="fw-bold">45.2M</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="changeUnderlying()">Change</button>
+                    </div>
+                </div>
+                <div id="underlyingSelector" class="underlying-selector">
+                    <button class="btn btn-primary" onclick="showUnderlyingModal()">SELECT UNDERLYING</button>
+                </div>
+            </div>
+            
+            <!-- Mode Toggle -->
+            <div class="d-flex justify-between align-center">
+                <div class="toggle-switch d-flex align-center">
+                    <span class="fw-medium">Beginner</span>
+                    <div class="switch" id="modeSwitch">
+                        <div class="switch-handle"></div>
+                    </div>
+                    <span class="fw-medium">Trading</span>
+                </div>
+                <div class="basket-icon" id="basketIcon" onclick="showBasket()" style="position: relative; cursor: pointer;">
+                    🧺
+                    <span class="basket-count" id="basketCount" style="display: none;">0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Filters -->
+    <section class="advanced-filters" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <div class="filter-row mb-2">
+                <div class="d-flex gap-sm" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <select class="form-control form-select" id="expiryFilter" style="min-width: 120px;">
+                        <option value="2025-09-14">Sep 14 (7d)</option>
+                        <option value="2025-09-21" selected>Sep 21 (14d)</option>
+                        <option value="2025-10-19">Oct 19 (6w)</option>
+                        <option value="2025-12-19">Dec 19 (3m)</option>
+                    </select>
+                    <button class="btn btn-outline-primary btn-sm" id="calendarBtn">📅</button>
+                    <button class="btn btn-outline-primary btn-sm" id="allOptionsBtn">All</button>
+                    <button class="btn btn-outline-primary btn-sm" id="itmBtn">ITM</button>
+                    <button class="btn btn-outline-primary btn-sm" id="atmBtn">ATM</button>
+                    <button class="btn btn-outline-primary btn-sm" id="otmBtn">OTM</button>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="d-flex gap-sm" style="overflow-x: auto;">
+                    <div class="filter-group">
+                        <label class="form-label">Volume</label>
+                        <input type="range" class="form-control" id="volumeFilter" min="0" max="10000" value="0">
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Delta</label>
+                        <input type="range" class="form-control" id="deltaFilter" min="0" max="1" step="0.1" value="0">
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">IV</label>
+                        <input type="range" class="form-control" id="ivFilter" min="0" max="100" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding: 0; padding-bottom: 80px;">
+        <!-- Trading Mode Options Table -->
+        <section class="options-table-section" id="optionsContainer">
+            <div class="table-responsive">
+                <table class="table options-table trading-table" id="optionsTable">
+                    <thead>
+                        <tr>
+                            <th colspan="7" class="calls-header">CALLS</th>
+                            <th class="strike-header">STRIKE</th>
+                            <th colspan="7" class="puts-header">PUTS</th>
+                        </tr>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('call_oi')">OI</th>
+                            <th class="sortable" onclick="sortTable('call_vol')">Vol</th>
+                            <th class="sortable" onclick="sortTable('call_ltp')">LTP%</th>
+                            <th class="sortable" onclick="sortTable('call_delta')">Δ</th>
+                            <th class="sortable" onclick="sortTable('call_gamma')">Γ</th>
+                            <th class="sortable" onclick="sortTable('call_theta')">Θ</th>
+                            <th class="sortable" onclick="sortTable('call_iv')">IV</th>
+                            <th class="strike-header">STRIKE</th>
+                            <th class="sortable" onclick="sortTable('put_iv')">IV</th>
+                            <th class="sortable" onclick="sortTable('put_theta')">Θ</th>
+                            <th class="sortable" onclick="sortTable('put_gamma')">Γ</th>
+                            <th class="sortable" onclick="sortTable('put_delta')">Δ</th>
+                            <th class="sortable" onclick="sortTable('put_ltp')">LTP%</th>
+                            <th class="sortable" onclick="sortTable('put_vol')">Vol</th>
+                            <th class="sortable" onclick="sortTable('put_oi')">OI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="optionsTableBody">
+                        <!-- Options data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Loading Message -->
+        <div id="loadingMessage" class="text-center p-4">
+            <p>Select an underlying asset to view options data</p>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; background: white; border-top: 1px solid var(--gray-200); display: flex;">
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+        </a>
+        <a href="orders.html" class="nav-item">
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">Orders</div>
+        </a>
+        <a href="market.html" class="nav-item">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Market</div>
+        </a>
+        <a href="mobile-trading.html" class="nav-item active">
+            <div class="nav-icon">⚡</div>
+            <div class="nav-label">Options</div>
+        </a>
+        <a href="portfolio.html" class="nav-item">
+            <div class="nav-icon">💼</div>
+            <div class="nav-label">Portfolio</div>
+        </a>
+    </nav>
+
+    <!-- Strike Details Modal -->
+    <div class="modal-overlay" id="strikeModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title" id="strikeModalTitle">Strike Details</h3>
+                <button class="modal-close" onclick="closeStrikeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="strikeModalBody">
+                <!-- Strike details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Enhanced Sample Options Data with Greeks
+        const sampleOptionsData = {
+            'NIFTY': {
+                price: 19450.25,
+                change: 125.30,
+                changePercent: 0.65,
+                ivRank: 32,
+                volume: '45.2M',
+                options: [
+                    { 
+                        strike: 19400, 
+                        call: { oi: '1.2K', vol: '890', ltp_change: 2.3, delta: 0.75, gamma: 0.08, theta: -0.15, iv: '28%' },
+                        put: { oi: '0.8K', vol: '650', ltp_change: 1.2, delta: -0.25, gamma: 0.06, theta: -0.12, iv: '30%' }
+                    },
+                    { 
+                        strike: 19450, 
+                        call: { oi: '2.8K', vol: '1.2K', ltp_change: -1.1, delta: 0.65, gamma: 0.12, theta: -0.18, iv: '26%' },
+                        put: { oi: '1.5K', vol: '1.1K', ltp_change: -2.1, delta: -0.35, gamma: 0.10, theta: -0.16, iv: '28%' }
+                    },
+                    { 
+                        strike: 19500, 
+                        call: { oi: '5.1K', vol: '2.3K', ltp_change: 5.2, delta: 0.55, gamma: 0.15, theta: -0.22, iv: '25%' },
+                        put: { oi: '3.2K', vol: '1.8K', ltp_change: 3.8, delta: -0.45, gamma: 0.13, theta: -0.20, iv: '26%' }
+                    },
+                    { 
+                        strike: 19550, 
+                        call: { oi: '3.8K', vol: '1.8K', ltp_change: -0.8, delta: 0.42, gamma: 0.18, theta: -0.25, iv: '24%' },
+                        put: { oi: '2.1K', vol: '1.4K', ltp_change: 2.5, delta: -0.58, gamma: 0.16, theta: -0.23, iv: '25%' }
+                    },
+                    { 
+                        strike: 19600, 
+                        call: { oi: '2.1K', vol: '1.1K', ltp_change: 1.5, delta: 0.28, gamma: 0.20, theta: -0.28, iv: '23%' },
+                        put: { oi: '1.8K', vol: '1.2K', ltp_change: -1.8, delta: -0.72, gamma: 0.18, theta: -0.26, iv: '24%' }
+                    }
+                ]
+            },
+            'BANKNIFTY': {
+                price: 42850.75,
+                change: -85.20,
+                changePercent: -0.20,
+                ivRank: 28,
+                volume: '12.8M',
+                options: [
+                    { 
+                        strike: 42800, 
+                        call: { oi: '890', vol: '450', ltp_change: 1.8, delta: 0.52, gamma: 0.10, theta: -0.20, iv: '30%' },
+                        put: { oi: '650', vol: '380', ltp_change: 2.5, delta: -0.48, gamma: 0.08, theta: -0.18, iv: '32%' }
+                    },
+                    { 
+                        strike: 42900, 
+                        call: { oi: '1.2K', vol: '680', ltp_change: -0.5, delta: 0.42, gamma: 0.12, theta: -0.22, iv: '28%' },
+                        put: { oi: '980', vol: '520', ltp_change: -1.2, delta: -0.58, gamma: 0.10, theta: -0.20, iv: '30%' }
+                    }
+                ]
+            }
+        };
+
+        let currentUnderlying = null;
+        let basketItems = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const symbol = urlParams.get('symbol');
+            
+            if (symbol && sampleOptionsData[symbol]) {
+                selectUnderlying(symbol);
+            } else {
+                showUnderlyingSelector();
+            }
+        });
+
+        function showUnderlyingModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal modal-mobile">
+                    <div class="modal-header">
+                        <h3>Select Underlying</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="underlying-list">
+                            <div class="underlying-item" onclick="selectUnderlying('NIFTY')">
+                                <div class="d-flex justify-between align-center p-3 border rounded mb-2">
+                                    <div>
+                                        <div class="fw-bold">NIFTY</div>
+                                        <div class="text-muted">Nifty 50 Index</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="fw-bold">19,450.25</div>
+                                        <div class="text-success">+125.30 (+0.65%)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="underlying-item" onclick="selectUnderlying('BANKNIFTY')">
+                                <div class="d-flex justify-between align-center p-3 border rounded mb-2">
+                                    <div>
+                                        <div class="fw-bold">BANKNIFTY</div>
+                                        <div class="text-muted">Bank Nifty Index</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="fw-bold">42,850.75</div>
+                                        <div class="text-danger">-85.20 (-0.20%)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function selectUnderlying(symbol) {
+            currentUnderlying = symbol;
+            const data = sampleOptionsData[symbol];
+            
+            // Update underlying display
+            document.getElementById('underlyingSymbol').textContent = symbol;
+            document.getElementById('underlyingPrice').textContent = data.price.toLocaleString('en-IN');
+            const changeClass = data.change >= 0 ? 'text-success' : 'text-danger';
+            const changeSign = data.change >= 0 ? '+' : '';
+            document.getElementById('underlyingChange').innerHTML = `<span class="${changeClass}">${changeSign}${data.change} (${changeSign}${data.changePercent}%)</span>`;
+            
+            // Show/hide sections
+            document.getElementById('selectedUnderlying').style.display = 'block';
+            document.getElementById('underlyingSelector').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'none';
+            
+            // Populate options table
+            populateTradingTable(data.options);
+            
+            // Close modal if open
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function populateTradingTable(options) {
+            const tbody = document.getElementById('optionsTableBody');
+            tbody.innerHTML = '';
+            
+            options.forEach(option => {
+                const row = document.createElement('tr');
+                row.className = 'option-row';
+                row.onclick = () => showStrikeDetails(option.strike, option);
+                
+                // Color coding for LTP changes
+                const callLtpClass = option.call.ltp_change >= 0 ? 'text-success' : 'text-danger';
+                const putLtpClass = option.put.ltp_change >= 0 ? 'text-success' : 'text-danger';
+                const callSign = option.call.ltp_change >= 0 ? '+' : '';
+                const putSign = option.put.ltp_change >= 0 ? '+' : '';
+                
+                row.innerHTML = `
+                    <td class="call-oi">${option.call.oi}</td>
+                    <td class="call-vol">${option.call.vol}</td>
+                    <td class="call-ltp ${callLtpClass}">${callSign}${option.call.ltp_change}%</td>
+                    <td class="call-delta">${option.call.delta}</td>
+                    <td class="call-gamma">${option.call.gamma}</td>
+                    <td class="call-theta">${option.call.theta}</td>
+                    <td class="call-iv">${option.call.iv}</td>
+                    <td class="strike-price fw-bold">${option.strike.toLocaleString('en-IN')}</td>
+                    <td class="put-iv">${option.put.iv}</td>
+                    <td class="put-theta">${option.put.theta}</td>
+                    <td class="put-gamma">${option.put.gamma}</td>
+                    <td class="put-delta">${option.put.delta}</td>
+                    <td class="put-ltp ${putLtpClass}">${putSign}${option.put.ltp_change}%</td>
+                    <td class="put-vol">${option.put.vol}</td>
+                    <td class="put-oi">${option.put.oi}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showStrikeDetails(strike, optionData) {
+            const modal = document.getElementById('strikeModal');
+            const title = document.getElementById('strikeModalTitle');
+            const body = document.getElementById('strikeModalBody');
+            
+            title.textContent = `${currentUnderlying} ${strike} STRIKE`;
+            body.innerHTML = `
+                <div class="strike-info mb-3">
+                    <div class="d-flex justify-between mb-2">
+                        <span>CALL: ₹45.50</span>
+                        <span>PUT: ₹32.25</span>
+                    </div>
+                    <div class="greeks-info">
+                        <div class="d-flex justify-between mb-1">
+                            <span>Call Δ: ${optionData.call.delta}</span>
+                            <span>Put Δ: ${optionData.put.delta}</span>
+                        </div>
+                        <div class="d-flex justify-between mb-1">
+                            <span>Call IV: ${optionData.call.iv}</span>
+                            <span>Put IV: ${optionData.put.iv}</span>
+                        </div>
+                        <div class="d-flex justify-between">
+                            <span>Volume: ${optionData.call.vol}/${optionData.put.vol}</span>
+                            <span>OI: ${optionData.call.oi}/${optionData.put.oi}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="directTrade('call', ${strike})">BUY CALL</button>
+                        <button class="btn btn-outline-success" onclick="directTrade('sell_call', ${strike})">SELL CALL</button>
+                        <button class="btn btn-danger" onclick="directTrade('put', ${strike})">BUY PUT</button>
+                        <button class="btn btn-outline-danger" onclick="directTrade('sell_put', ${strike})">SELL PUT</button>
+                        <button class="btn btn-primary" onclick="addToBasket(${strike})">ADD TO BASKET</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeStrikeModal() {
+            document.getElementById('strikeModal').style.display = 'none';
+        }
+
+        function directTrade(action, strike) {
+            closeStrikeModal();
+            window.location.href = `order-entry.html?symbol=${currentUnderlying}&strike=${strike}&action=${action}`;
+        }
+
+        function addToBasket(strike) {
+            basketItems.push({
+                symbol: currentUnderlying,
+                strike: strike,
+                action: 'buy_call'
+            });
+            
+            document.getElementById('basketCount').textContent = basketItems.length;
+            document.getElementById('basketCount').style.display = basketItems.length > 0 ? 'block' : 'none';
+            
+            closeStrikeModal();
+        }
+
+        function showBasket() {
+            if (basketItems.length === 0) {
+                alert('Basket is empty');
+                return;
+            }
+            window.location.href = 'bulk-orders.html';
+        }
+
+        function changeUnderlying() {
+            showUnderlyingModal();
+        }
+
+        function showUnderlyingSelector() {
+            document.getElementById('selectedUnderlying').style.display = 'none';
+            document.getElementById('underlyingSelector').style.display = 'block';
+            document.getElementById('loadingMessage').style.display = 'block';
+        }
+
+        // Mode toggle functionality
+        document.getElementById('modeSwitch').addEventListener('click', function() {
+            window.location.href = 'mobile-beginner.html' + (currentUnderlying ? `?symbol=${currentUnderlying}` : '');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('strikeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeStrikeModal();
+            }
+        });
+    </script>
+
+    <style>
+        /* Trading Table Styles */
+        .trading-table {
+            font-size: 10px;
+        }
+        
+        .trading-table th {
+            padding: 0.5rem 0.25rem;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        
+        .trading-table td {
+            padding: 0.5rem 0.25rem;
+            font-size: 10px;
+        }
+        
+        .calls-header {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            text-align: center;
+        }
+        
+        .puts-header {
+            background-color: var(--danger-color) !important;
+            color: white !important;
+            text-align: center;
+        }
+        
+        .strike-header {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: 700;
+        }
+        
+        .filter-group {
+            min-width: 80px;
+            margin-right: 1rem;
+        }
+        
+        .filter-group label {
+            font-size: var(--font-size-xs);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        
+        .iv-info {
+            font-size: var(--font-size-xs);
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .trading-table {
+                font-size: 8px;
+            }
+            
+            .trading-table th,
+            .trading-table td {
+                padding: 0.25rem 0.15rem;
+                font-size: 8px;
+            }
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .greeks-info {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+        }
+    </style>
+</body>
+</html>

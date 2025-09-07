@@ -39,15 +39,41 @@
         </div>
     </section>
 
-    <!-- Mode Toggle -->
-    <section class="mode-toggle" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+    <!-- Underlying Selection & Mode Toggle -->
+    <section class="control-panel" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
         <div class="container">
-            <div class="toggle-switch d-flex justify-center align-center">
-                <span class="fw-medium">Beginner</span>
-                <div class="switch active" id="modeSwitch">
-                    <div class="switch-handle"></div>
+            <!-- Underlying Selection -->
+            <div class="underlying-section mb-3">
+                <div id="selectedUnderlying" class="selected-stock" style="display: none;">
+                    <div class="d-flex justify-between align-center">
+                        <div>
+                            <h2 class="fw-bold" id="underlyingSymbol">NIFTY</h2>
+                            <div class="price-info">
+                                <span class="price" id="underlyingPrice">19,450.25</span>
+                                <span class="change" id="underlyingChange">+125.30 (+0.65%)</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="changeUnderlying()">Change</button>
+                    </div>
                 </div>
-                <span class="fw-medium">Advanced</span>
+                <div id="underlyingSelector" class="underlying-selector">
+                    <button class="btn btn-primary" onclick="showUnderlyingModal()">SELECT UNDERLYING</button>
+                </div>
+            </div>
+            
+            <!-- Mode Toggle -->
+            <div class="d-flex justify-between align-center">
+                <div class="toggle-switch d-flex align-center">
+                    <span class="fw-medium">Beginner</span>
+                    <div class="switch active" id="modeSwitch">
+                        <div class="switch-handle"></div>
+                    </div>
+                    <span class="fw-medium">Trading</span>
+                </div>
+                <div class="basket-icon" id="basketIcon" onclick="showBasket()" style="position: relative; cursor: pointer;">
+                    🧺
+                    <span class="basket-count" id="basketCount" style="display: none; position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; text-align: center; line-height: 20px;">0</span>
+                </div>
             </div>
         </div>
     </section>
@@ -81,241 +107,51 @@
     </section>
 
     <main class="container" style="padding-bottom: 80px;">
-        <!-- Options Cards -->
-        <section class="options-cards" id="optionsContainer">
-            <!-- Call Options -->
-            <div class="option-card" data-type="call" data-strike="145">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type call">CALL</span>
-                        <div class="risk-indicator risk-medium" title="Medium Risk"></div>
-                    </div>
-                    <div class="strike-price">$145</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$6.75</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">1,247</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be above <span class="fw-bold text-success">$151.75</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 145, 6.75)">
-                            Buy Call
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 145)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <!-- Swipe Actions (Mobile) -->
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 145, 6.75)">Buy</a>
-                </div>
+        <!-- Options Table -->
+        <section class="options-table-section" id="optionsContainer">
+            <div class="table-responsive">
+                <table class="table options-table" id="optionsTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('call_oi')">CALL OI</th>
+                            <th class="sortable" onclick="sortTable('call_ltp')">CALL LTP%</th>
+                            <th class="strike-header">STRIKE</th>
+                            <th class="sortable" onclick="sortTable('put_ltp')">PUT LTP%</th>
+                            <th class="sortable" onclick="sortTable('put_oi')">PUT OI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="optionsTableBody">
+                        <!-- Options data will be populated here -->
+                    </tbody>
+                </table>
             </div>
-
-            <div class="option-card" data-type="call" data-strike="150">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type call">CALL</span>
-                        <div class="risk-indicator risk-high" title="High Risk"></div>
-                    </div>
-                    <div class="strike-price">$150</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$3.25</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">2,891</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be above <span class="fw-bold text-success">$153.25</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 150, 3.25)">
-                            Buy Call
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 150)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 150, 3.25)">Buy</a>
-                </div>
-            </div>
-
-            <div class="option-card" data-type="call" data-strike="155">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type call">CALL</span>
-                        <div class="risk-indicator risk-low" title="Low Risk"></div>
-                    </div>
-                    <div class="strike-price">$155</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$1.45</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">756</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be above <span class="fw-bold text-success">$156.45</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 155, 1.45)">
-                            Buy Call
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 155)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 155, 1.45)">Buy</a>
-                </div>
-            </div>
-
-            <!-- Put Options -->
-            <div class="option-card" data-type="put" data-strike="145">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type put">PUT</span>
-                        <div class="risk-indicator risk-low" title="Low Risk"></div>
-                    </div>
-                    <div class="strike-price">$145</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$1.85</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">934</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be below <span class="fw-bold text-danger">$143.15</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 145, 1.85)">
-                            Buy Put
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 145)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 145, 1.85)">Buy</a>
-                </div>
-            </div>
-
-            <div class="option-card" data-type="put" data-strike="150">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type put">PUT</span>
-                        <div class="risk-indicator risk-medium" title="Medium Risk"></div>
-                    </div>
-                    <div class="strike-price">$150</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$3.65</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">1,523</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be below <span class="fw-bold text-danger">$146.35</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 150, 3.65)">
-                            Buy Put
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 150)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 150, 3.65)">Buy</a>
-                </div>
-            </div>
-
-            <div class="option-card" data-type="put" data-strike="155">
-                <div class="option-card-header">
-                    <div class="d-flex align-center">
-                        <span class="option-type put">PUT</span>
-                        <div class="risk-indicator risk-high" title="High Risk"></div>
-                    </div>
-                    <div class="strike-price">$155</div>
-                </div>
-                <div class="option-card-body">
-                    <div class="option-metrics">
-                        <div class="metric">
-                            <div class="metric-label">Premium</div>
-                            <div class="metric-value premium">$6.95</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-label">Volume</div>
-                            <div class="metric-value volume">678</div>
-                        </div>
-                    </div>
-                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
-                        <div class="fw-semibold">Breakeven at expiry:</div>
-                        <div>Stock needs to be below <span class="fw-bold text-danger">$148.05</span></div>
-                    </div>
-                    <div class="d-flex gap-sm">
-                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 155, 6.95)">
-                            Buy Put
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 155)">
-                            Details
-                        </button>
-                    </div>
-                </div>
-                <div class="swipe-actions">
-                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 155, 6.95)">Buy</a>
-                </div>
-            </div>
+        </section>
+        </section>\n        \n        <!-- Sample Data Display (will be replaced by JavaScript) -->\n        <div id=\"loadingMessage\" class=\"text-center p-4\">\n            <p>Select an underlying asset to view options data</p>\n        </div>
         </section>
     </main>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;">
-        <a href="index.html" class="nav-tab">Home</a>
-        <button class="nav-tab active">Options</button>
-        <a href="mobile-advanced.html" class="nav-tab">Advanced</a>
-        <a href="desktop-table.html" class="nav-tab d-none" style="display: none !important;" id="desktopTab">Desktop</a>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; background: white; border-top: 1px solid var(--gray-200); display: flex;">
+        <a href="index.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+        </a>
+        <a href="orders.html" class="nav-item">
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">Orders</div>
+        </a>
+        <a href="market.html" class="nav-item">
+            <div class="nav-icon">📈</div>
+            <div class="nav-label">Market</div>
+        </a>
+        <a href="mobile-beginner.html" class="nav-item active">
+            <div class="nav-icon">⚡</div>
+            <div class="nav-label">Options</div>
+        </a>
+        <a href="portfolio.html" class="nav-item">
+            <div class="nav-icon">💼</div>
+            <div class="nav-label">Portfolio</div>
+        </a>
     </nav>
 
     <!-- Order Entry Modal -->
@@ -434,5 +270,220 @@
     </div>
 
     <script src="assets/js/app.js"></script>
+    <script>
+        // Sample Options Data
+        const sampleOptionsData = {
+            'NIFTY': {
+                price: 19450.25,
+                change: 125.30,
+                changePercent: 0.65,
+                options: [
+                    { strike: 19400, call_oi: '1.2K', call_ltp_change: 2.3, put_ltp_change: 1.2, put_oi: '0.8K' },
+                    { strike: 19450, call_oi: '2.8K', call_ltp_change: -1.1, put_ltp_change: -2.1, put_oi: '1.5K' },
+                    { strike: 19500, call_oi: '5.1K', call_ltp_change: 5.2, put_ltp_change: 3.8, put_oi: '3.2K' },
+                    { strike: 19550, call_oi: '3.8K', call_ltp_change: -0.8, put_ltp_change: 2.5, put_oi: '2.1K' },
+                    { strike: 19600, call_oi: '2.1K', call_ltp_change: 1.5, put_ltp_change: -1.8, put_oi: '1.8K' }
+                ]
+            },
+            'BANKNIFTY': {
+                price: 42850.75,
+                change: -85.20,
+                changePercent: -0.20,
+                options: [
+                    { strike: 42800, call_oi: '890', call_ltp_change: 1.8, put_ltp_change: 2.5, put_oi: '650' },
+                    { strike: 42900, call_oi: '1.2K', call_ltp_change: -0.5, put_ltp_change: -1.2, put_oi: '980' },
+                    { strike: 43000, call_oi: '2.3K', call_ltp_change: 3.2, put_ltp_change: 1.8, put_oi: '1.8K' }
+                ]
+            }
+        };
+
+        let currentUnderlying = null;
+        let basketItems = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if underlying was passed in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const symbol = urlParams.get('symbol');
+            
+            if (symbol && sampleOptionsData[symbol]) {
+                selectUnderlying(symbol);
+            } else {
+                showUnderlyingSelector();
+            }
+        });
+
+        function showUnderlyingModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal modal-mobile">
+                    <div class="modal-header">
+                        <h3>Select Underlying</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="search-section mb-3">
+                            <input type="text" placeholder="Search stocks..." class="form-control" id="underlyingSearch">
+                        </div>
+                        <div class="underlying-list">
+                            <div class="underlying-item" onclick="selectUnderlying('NIFTY')">
+                                <div class="d-flex justify-between align-center p-3 border rounded mb-2">
+                                    <div>
+                                        <div class="fw-bold">NIFTY</div>
+                                        <div class="text-muted">Nifty 50 Index</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="fw-bold">19,450.25</div>
+                                        <div class="text-success">+125.30 (+0.65%)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="underlying-item" onclick="selectUnderlying('BANKNIFTY')">
+                                <div class="d-flex justify-between align-center p-3 border rounded mb-2">
+                                    <div>
+                                        <div class="fw-bold">BANKNIFTY</div>
+                                        <div class="text-muted">Bank Nifty Index</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="fw-bold">42,850.75</div>
+                                        <div class="text-danger">-85.20 (-0.20%)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function selectUnderlying(symbol) {
+            currentUnderlying = symbol;
+            const data = sampleOptionsData[symbol];
+            
+            // Update underlying display
+            document.getElementById('underlyingSymbol').textContent = symbol;
+            document.getElementById('underlyingPrice').textContent = data.price.toLocaleString('en-IN');
+            const changeClass = data.change >= 0 ? 'text-success' : 'text-danger';
+            const changeSign = data.change >= 0 ? '+' : '';
+            document.getElementById('underlyingChange').innerHTML = `<span class="${changeClass}">${changeSign}${data.change} (${changeSign}${data.changePercent}%)</span>`;
+            
+            // Show/hide sections
+            document.getElementById('selectedUnderlying').style.display = 'block';
+            document.getElementById('underlyingSelector').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'none';
+            
+            // Populate options table
+            populateOptionsTable(data.options);
+            
+            // Close modal if open
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function populateOptionsTable(options) {
+            const tbody = document.getElementById('optionsTableBody');
+            tbody.innerHTML = '';
+            
+            options.forEach(option => {
+                const row = document.createElement('tr');
+                row.className = 'option-row';
+                row.onclick = () => showStrikeDetails(option.strike);
+                
+                const callLtpClass = option.call_ltp_change >= 0 ? 'text-success' : 'text-danger';
+                const putLtpClass = option.put_ltp_change >= 0 ? 'text-success' : 'text-danger';
+                const callLtpSign = option.call_ltp_change >= 0 ? '+' : '';
+                const putLtpSign = option.put_ltp_change >= 0 ? '+' : '';
+                
+                row.innerHTML = `
+                    <td class="call-oi">${option.call_oi}</td>
+                    <td class="call-ltp ${callLtpClass}">${callLtpSign}${option.call_ltp_change}%</td>
+                    <td class="strike-price fw-bold">${option.strike.toLocaleString('en-IN')}</td>
+                    <td class="put-ltp ${putLtpClass}">${putLtpSign}${option.put_ltp_change}%</td>
+                    <td class="put-oi">${option.put_oi}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showStrikeDetails(strike) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal modal-mobile">
+                    <div class="modal-header">
+                        <h3>${currentUnderlying} ${strike} STRIKE</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="strike-info mb-3">
+                            <div class="d-flex justify-between mb-2">
+                                <span>CALL: ₹45.50</span>
+                                <span>PUT: ₹32.25</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success" onclick="directTrade('call', ${strike})">BUY CALL</button>
+                                <button class="btn btn-outline-success" onclick="directTrade('sell_call', ${strike})">SELL CALL</button>
+                                <button class="btn btn-danger" onclick="directTrade('put', ${strike})">BUY PUT</button>
+                                <button class="btn btn-outline-danger" onclick="directTrade('sell_put', ${strike})">SELL PUT</button>
+                                <button class="btn btn-primary" onclick="addToBasket(${strike})">ADD TO BASKET</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function directTrade(action, strike) {
+            // Close strike details modal
+            document.querySelector('.modal-overlay').remove();
+            // Redirect to order entry
+            window.location.href = `order-entry.html?symbol=${currentUnderlying}&strike=${strike}&action=${action}`;
+        }
+
+        function addToBasket(strike) {
+            basketItems.push({
+                symbol: currentUnderlying,
+                strike: strike,
+                action: 'buy_call' // Default action
+            });
+            
+            // Update basket count
+            document.getElementById('basketCount').textContent = basketItems.length;
+            document.getElementById('basketCount').style.display = basketItems.length > 0 ? 'block' : 'none';
+            
+            // Close modal
+            document.querySelector('.modal-overlay').remove();
+        }
+
+        function showBasket() {
+            if (basketItems.length === 0) {
+                alert('Basket is empty');
+                return;
+            }
+            // Redirect to basket page
+            window.location.href = 'bulk-orders.html';
+        }
+
+        function changeUnderlying() {
+            showUnderlyingModal();
+        }
+
+        function showUnderlyingSelector() {
+            document.getElementById('selectedUnderlying').style.display = 'none';
+            document.getElementById('underlyingSelector').style.display = 'block';
+            document.getElementById('loadingMessage').style.display = 'block';
+        }
+
+        // Mode toggle functionality
+        document.getElementById('modeSwitch').addEventListener('click', function() {
+            window.location.href = 'mobile-advanced.html' + (currentUnderlying ? `?symbol=${currentUnderlying}` : '');
+        });
+    </script>
 </body>
 </html>
