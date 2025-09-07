@@ -1,0 +1,32 @@
+# NSE Options Chain Trading Platform
+
+A professional NSE-compliant options chain trading platform with beginner and professional trading modes, basket functionality, and responsive design.
+
+## Features
+- Real-time options chain simulation
+- Symbol and expiry selection
+- Trading mode toggle (Beginner/Professional)
+- Basket for multi-leg strategies
+- Trade execution flow (demo)
+- Search and filtering
+- Responsive layout for desktop and mobile
+
+## Usage
+1. Clone the repository:
+   ```
+   git clone https://github.com/CHIBOLAR/Options-chain-prototype.git
+   ```
+2. Push your local files to the repo:
+   ```
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+3. Enable GitHub Pages in repository settings (set source to root or `/docs`).
+
+## Live Demo
+Once GitHub Pages is enabled, visit:  
+`https://chibolar.github.io/Options-chain-prototype/`
+
+## License
+MIT

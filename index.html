@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSE Options Chain - Professional Trading Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>TradePro</span>
+            </div>
+            <div class="market-status">
+                <span class="status-indicator live"></span>
+                <span>NSE Live</span>
+                <span class="time" id="market-time">15:29:45</span>
+            </div>
+            <div class="user-info">
+                <span>Available Margin: <strong>₹2,45,680</strong></span>
+                <button class="profile-btn"><i class="fas fa-user-circle"></i></button>
+            </div>
+        </div>
+        
+        <nav class="main-nav">
+            <div class="nav-tabs">
+                <button class="nav-tab" data-tab="home"><i class="fas fa-home"></i> Home</button>
+                <button class="nav-tab" data-tab="orders"><i class="fas fa-list-alt"></i> Orders</button>
+                <button class="nav-tab" data-tab="market"><i class="fas fa-chart-bar"></i> Market</button>
+                <button class="nav-tab active" data-tab="options"><i class="fas fa-layer-group"></i> Options</button>
+                <button class="nav-tab" data-tab="portfolio"><i class="fas fa-briefcase"></i> Portfolio</button>
+            </div>
+            
+            <div class="trading-mode-toggle">
+                <span class="mode-label">Mode:</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="trading-mode" checked>
+                    <label for="trading-mode">
+                        <span class="beginner">👶 Beginner</span>
+                        <span class="professional">📊 Trading</span>
+                    </label>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Options Chain Page -->
+        <div class="page active" id="options-page">
+            <!-- Controls Header -->
+            <div class="options-header">
+                <div class="controls-row">
+                    <div class="symbol-selector">
+                        <label>Symbol:</label>
+                        <select id="symbol-select">
+                            <option value="NIFTY">NIFTY</option>
+                            <option value="BANKNIFTY">BANKNIFTY</option>
+                            <option value="FINNIFTY">FINNIFTY</option>
+                            <option value="RELIANCE">RELIANCE</option>
+                            <option value="TCS">TCS</option>
+                        </select>
+                    </div>
+                    
+                    <div class="expiry-selector">
+                        <label>Expiry:</label>
+                        <select id="expiry-select">
+                            <option value="2024-01-25">25-JAN-24 (2 days)</option>
+                            <option value="2024-02-01">01-FEB-24 (9 days)</option>
+                            <option value="2024-02-08">08-FEB-24 (16 days)</option>
+                            <option value="2024-02-29">29-FEB-24 (37 days)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="spot-price">
+                        <label>Spot:</label>
+                        <span class="price" id="spot-price">21,347.50</span>
+                        <span class="change positive" id="spot-change">+186.75 (+0.88%)</span>
+                    </div>
+                    
+                    <button class="refresh-btn" id="refresh-data">
+                        <i class="fas fa-sync-alt"></i>
+                        Auto-refresh
+                    </button>
+                </div>
+                
+                <div class="search-filter-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="options-search" placeholder="Search strike, strategy, premium...">
+                    </div>
+                    
+                    <div class="quick-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="itm">ITM</button>
+                        <button class="filter-btn atm-btn" data-filter="atm">ATM</button>
+                        <button class="filter-btn" data-filter="otm">OTM</button>
+                        <button class="filter-btn" data-filter="high-volume">High Vol</button>
+                    </div>
+                    
+                    <button class="advanced-filters-btn">
+                        <i class="fas fa-filter"></i>
+                        Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Options Chain Table -->
+            <div class="options-chain-container">
+                <div class="table-wrapper">
+                    <table class="options-table" id="options-table">
+                        <thead>
+                            <tr class="table-header">
+                                <!-- Call Options Headers -->
+                                <th class="sortable call-header" data-sort="call-oi">OI</th>
+                                <th class="sortable call-header" data-sort="call-vol">Vol</th>
+                                <th class="sortable call-header" data-sort="call-ltp">LTP</th>
+                                <th class="sortable call-header" data-sort="call-chg">Chg%</th>
+                                <th class="call-header trading-mode-only">IV</th>
+                                <th class="call-header trading-mode-only">Delta</th>
+                                
+                                <!-- Strike Price Column -->
+                                <th class="strike-header">
+                                    <div class="strike-title">STRIKE PRICE</div>
+                                    <div class="call-put-labels">
+                                        <span class="call-label">CALLS</span>
+                                        <span class="put-label">PUTS</span>
+                                    </div>
+                                </th>
+                                
+                                <!-- Put Options Headers -->
+                                <th class="put-header trading-mode-only">Delta</th>
+                                <th class="put-header trading-mode-only">IV</th>
+                                <th class="sortable put-header" data-sort="put-chg">Chg%</th>
+                                <th class="sortable put-header" data-sort="put-ltp">LTP</th>
+                                <th class="sortable put-header" data-sort="put-vol">Vol</th>
+                                <th class="sortable put-header" data-sort="put-oi">OI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="options-tbody">
+                            <!-- Options data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Pages (Placeholder) -->
+        <div class="page" id="home-page">
+            <div class="dashboard">
+                <h2>Dashboard</h2>
+                <div class="quick-access">
+                    <button class="quick-btn" onclick="switchToOptions('NIFTY')">
+                        <i class="fas fa-rocket"></i>
+                        Trade NIFTY Options
+                    </button>
+                    <button class="quick-btn" onclick="switchToOptions('BANKNIFTY')">
+                        <i class="fas fa-university"></i>
+                        Trade BANKNIFTY Options
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="orders-page">
+            <h2>Orders & Positions</h2>
+            <p>Orders management will be implemented here</p>
+        </div>
+
+        <div class="page" id="market-page">
+            <h2>Market Watch</h2>
+            <p>Market data and stock lists will be shown here</p>
+        </div>
+
+        <div class="page" id="portfolio-page">
+            <h2>Portfolio</h2>
+            <p>Portfolio overview and P&L will be displayed here</p>
+        </div>
+    </main>
+
+    <!-- Sidebar for Basket -->
+    <aside class="basket-sidebar" id="basket-sidebar">
+        <div class="basket-header">
+            <h3><i class="fas fa-shopping-basket"></i> Options Basket</h3>
+            <button class="close-basket" id="close-basket">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="basket-content">
+            <div class="basket-items" id="basket-items">
+                <div class="empty-basket">
+                    <i class="fas fa-basket-shopping"></i>
+                    <p>No options selected</p>
+                    <small>Click on option prices to add to basket</small>
+                </div>
+            </div>
+            
+            <div class="basket-summary" id="basket-summary" style="display: none;">
+                <div class="strategy-analysis">
+                    <h4>Strategy Analysis</h4>
+                    <div class="analysis-row">
+                        <span>Net Premium:</span>
+                        <span id="net-premium">₹0</span>
+                    </div>
+                    <div class="analysis-row">
+                        <span>Max Profit:</span>
+                        <span id="max-profit">-</span>
+                    </div>
+                    <div class="analysis-row">
+                        <span>Max Loss:</span>
+                        <span id="max-loss">-</span>
+                    </div>
+                    <div class="analysis-row">
+                        <span>Break-even:</span>
+                        <span id="breakeven">-</span>
+                    </div>
+                </div>
+                
+                <div class="basket-actions">
+                    <button class="btn-primary execute-all">Execute All</button>
+                    <button class="btn-secondary clear-basket">Clear Basket</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Trade Modal -->
+    <div class="modal" id="trade-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="trade-modal-title">Trade Option</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="trade-form">
+                    <div class="option-info">
+                        <div class="option-details" id="option-details">
+                            <!-- Option details will be populated -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Action:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="action" value="BUY" checked> Buy</label>
+                            <label><input type="radio" name="action" value="SELL"> Sell</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Quantity (Lots):</label>
+                        <input type="number" id="quantity" value="1" min="1" max="100">
+                        <small>1 lot = 50 shares</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Order Type:</label>
+                        <select id="order-type">
+                            <option value="MARKET">Market</option>
+                            <option value="LIMIT">Limit</option>
+                            <option value="SL">Stop Loss</option>
+                            <option value="SL-M">Stop Loss Market</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="price-group">
+                        <label>Price:</label>
+                        <input type="number" id="price" step="0.05">
+                    </div>
+                    
+                    <div class="risk-analysis" id="risk-analysis">
+                        <h4>Risk Analysis</h4>
+                        <div class="risk-item">
+                            <span>Total Cost:</span>
+                            <span id="total-cost">₹0</span>
+                        </div>
+                        <div class="risk-item">
+                            <span>Margin Required:</span>
+                            <span id="margin-required">₹0</span>
+                        </div>
+                        <div class="risk-item">
+                            <span>Break-even:</span>
+                            <span id="individual-breakeven">₹0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn-secondary add-to-basket">Add to Basket</button>
+                        <button class="btn-primary place-order">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strike Details Modal -->
+    <div class="modal large-modal" id="strike-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="strike-modal-title">Strike Analysis</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="strike-analysis" id="strike-analysis-content">
+                    <!-- Strike analysis content will be populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-sync-alt fa-spin"></i>
+            <span>Loading market data...</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
