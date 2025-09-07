@@ -3,13 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to Trading Mode - OptionTrade Pro</title>
-    <script>
-        // Redirect to new trading mode page
-        window.location.href = 'mobile-trading.html' + window.location.search;
-    </script>
+    <title>AAPL Options - Advanced Mobile - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 </head>
 <body>
-<p>Redirecting to Trading Mode...</p>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm" id="helpBtn">Help</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 1.5rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-2">
+                <div>
+                    <h1 style="font-size: 1.5rem; margin: 0; font-weight: 700;" id="stockSymbol">AAPL</h1>
+                    <p style="margin: 0; opacity: 0.8;" id="companyName">Apple Inc.</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 1.25rem; font-weight: 600;" id="stockPrice">$150.25</div>
+                    <div style="font-size: 0.875rem; opacity: 0.8;" id="stockChange">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div style="font-size: 0.875rem; opacity: 0.8;">
+                IV Rank: <span class="fw-bold">32%</span> | 
+                Volume: <span class="fw-bold">45.2M</span> |
+                Last: <span id="lastUpdate">2:30 PM ET</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Filters -->
+    <section class="quick-filters" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <div class="d-flex gap-sm" style="overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 0.25rem;">
+                <select class="btn btn-outline-primary btn-sm" id="expiryQuickFilter" style="min-width: auto; padding: 0.25rem 0.5rem;">
+                    <option value="2025-09-14">Sep 14 (7d)</option>
+                    <option value="2025-09-21" selected>Sep 21 (14d)</option>
+                    <option value="2025-10-19">Oct 19 (6w)</option>
+                    <option value="2025-12-19">Dec 19 (3m)</option>
+                </select>
+                <button class="btn btn-outline-primary btn-sm" id="callsFilter">Calls</button>
+                <button class="btn btn-outline-primary btn-sm" id="putsFilter">Puts</button>
+                <button class="btn btn-outline-primary btn-sm active" id="allFilter">All</button>
+                <button class="btn btn-outline-primary btn-sm" id="itmFilter">ITM</button>
+                <button class="btn btn-outline-primary btn-sm" id="otmFilter">OTM</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Options Table -->
+    <main class="container" style="padding: 0; padding-bottom: 80px;">
+        <div class="table-container">
+            <table class="table table-sortable" id="optionsTable">
+                <thead>
+                    <tr>
+                        <th data-sort="type" style="min-width: 50px;">Type</th>
+                        <th data-sort="strike" style="min-width: 60px;">Strike</th>
+                        <th data-sort="bid" style="min-width: 50px;">Bid</th>
+                        <th data-sort="ask" style="min-width: 50px;">Ask</th>
+                        <th data-sort="last" style="min-width: 50px;">Last</th>
+                        <th data-sort="volume" style="min-width: 60px;">Vol</th>
+                        <th data-sort="iv" style="min-width: 50px;">IV</th>
+                        <th data-sort="delta" style="min-width: 50px;">Δ</th>
+                    </tr>
+                </thead>
+                <tbody id="optionsTableBody">
+                    <!-- Call Options -->
+                    <tr class="option-row" data-type="call" data-strike="145" onclick="selectOption(this)">
+                        <td><span class="option-type call">C</span></td>
+                        <td class="fw-bold">145</td>
+                        <td class="price-cell" data-price="6.70">6.70</td>
+                        <td class="price-cell" data-price="6.80">6.80</td>
+                        <td class="price-cell price-up" data-price="6.75">6.75</td>
+                        <td class="volume-cell" data-volume="1247">1.2K</td>
+                        <td class="iv-cell">24.5%</td>
+                        <td class="delta-cell">0.67</td>
+                    </tr>
+                    <tr class="option-row" data-type="call" data-strike="150" onclick="selectOption(this)">
+                        <td><span class="option-type call">C</span></td>
+                        <td class="fw-bold">150</td>
+                        <td class="price-cell" data-price="3.20">3.20</td>
+                        <td class="price-cell" data-price="3.30">3.30</td>
+                        <td class="price-cell" data-price="3.25">3.25</td>
+                        <td class="volume-cell high-volume" data-volume="2891">2.9K</td>
+                        <td class="iv-cell">28.2%</td>
+                        <td class="delta-cell">0.52</td>
+                    </tr>
+                    <tr class="option-row" data-type="call" data-strike="155" onclick="selectOption(this)">
+                        <td><span class="option-type call">C</span></td>
+                        <td class="fw-bold">155</td>
+                        <td class="price-cell" data-price="1.40">1.40</td>
+                        <td class="price-cell" data-price="1.50">1.50</td>
+                        <td class="price-cell price-down" data-price="1.45">1.45</td>
+                        <td class="volume-cell" data-volume="756">756</td>
+                        <td class="iv-cell">31.8%</td>
+                        <td class="delta-cell">0.31</td>
+                    </tr>
+                    
+                    <!-- At-the-money separator -->
+                    <tr class="separator-row">
+                        <td colspan="8" style="background-color: var(--gray-200); text-align: center; font-weight: 600; color: var(--primary-color); font-size: var(--font-size-sm);">
+                            Current Stock Price: $150.25
+                        </td>
+                    </tr>
+                    
+                    <!-- Put Options -->
+                    <tr class="option-row" data-type="put" data-strike="155" onclick="selectOption(this)">
+                        <td><span class="option-type put">P</span></td>
+                        <td class="fw-bold">155</td>
+                        <td class="price-cell" data-price="6.90">6.90</td>
+                        <td class="price-cell" data-price="7.00">7.00</td>
+                        <td class="price-cell" data-price="6.95">6.95</td>
+                        <td class="volume-cell" data-volume="678">678</td>
+                        <td class="iv-cell">32.1%</td>
+                        <td class="delta-cell">-0.69</td>
+                    </tr>
+                    <tr class="option-row" data-type="put" data-strike="150" onclick="selectOption(this)">
+                        <td><span class="option-type put">P</span></td>
+                        <td class="fw-bold">150</td>
+                        <td class="price-cell" data-price="3.60">3.60</td>
+                        <td class="price-cell" data-price="3.70">3.70</td>
+                        <td class="price-cell price-up" data-price="3.65">3.65</td>
+                        <td class="volume-cell high-volume" data-volume="1523">1.5K</td>
+                        <td class="iv-cell">28.7%</td>
+                        <td class="delta-cell">-0.48</td>
+                    </tr>
+                    <tr class="option-row" data-type="put" data-strike="145" onclick="selectOption(this)">
+                        <td><span class="option-type put">P</span></td>
+                        <td class="fw-bold">145</td>
+                        <td class="price-cell" data-price="1.80">1.80</td>
+                        <td class="price-cell" data-price="1.90">1.90</td>
+                        <td class="price-cell" data-price="1.85">1.85</td>
+                        <td class="volume-cell" data-volume="934">934</td>
+                        <td class="iv-cell">25.3%</td>
+                        <td class="delta-cell">-0.33</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Quick Action Bar -->
+    <div id="quickActionBar" class="d-none" style="position: fixed; bottom: 60px; left: 0; right: 0; background-color: var(--primary-color); color: white; padding: 1rem; z-index: 999;">
+        <div class="container">
+            <div class="d-flex justify-between align-center">
+                <div>
+                    <div class="fw-bold" id="selectedOption">AAPL $150 Call</div>
+                    <div style="font-size: 0.875rem; opacity: 0.8;" id="selectedPrice">Last: $3.25</div>
+                </div>
+                <div class="d-flex gap-sm">
+                    <button class="btn btn-success btn-sm" onclick="quickBuy()">Buy</button>
+                    <button class="btn btn-danger btn-sm" onclick="quickSell()">Sell</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="clearSelection()" style="color: white; border-color: white;">×</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;">
+        <a href="index.html" class="nav-tab">Home</a>
+        <a href="mobile-beginner.html" class="nav-tab">Beginner</a>
+        <button class="nav-tab active">Advanced</button>
+        <a href="desktop-table.html" class="nav-tab">Desktop</a>
+    </nav>
+
+    <!-- Order Modal (Shared) -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Quick Order</h3>
+                <button class="modal-close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-summary mb-3" style="background-color: var(--gray-100); padding: var(--spacing-md); border-radius: var(--border-radius);">
+                    <div class="d-flex justify-between mb-2">
+                        <span>Option:</span>
+                        <span class="fw-bold" id="optionSummary">AAPL $150 Call</span>
+                    </div>
+                    <div class="d-flex justify-between mb-2">
+                        <span>Action:</span>
+                        <span class="fw-bold" id="actionSummary">Buy to Open</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Market Price:</span>
+                        <span class="fw-bold" id="marketPriceSummary">$3.25</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    <div class="quantity-selector">
+                        <button type="button" class="quantity-btn" onclick="adjustQuantity(-1)">-</button>
+                        <input type="number" class="form-control quantity-input" id="quantity" value="1" min="1" max="100">
+                        <button type="button" class="quantity-btn" onclick="adjustQuantity(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Order Type</label>
+                    <select class="form-control form-select" id="orderType" onchange="toggleLimitPrice()">
+                        <option value="market">Market Order</option>
+                        <option value="limit">Limit Order</option>
+                    </select>
+                </div>
+
+                <div class="form-group d-none" id="limitPriceGroup">
+                    <label class="form-label">Limit Price</label>
+                    <div class="d-flex gap-sm align-center">
+                        <input type="number" class="form-control" id="limitPrice" step="0.01" placeholder="0.00">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setMidPrice()">Mid</button>
+                    </div>
+                </div>
+
+                <div class="order-totals mt-3" style="background-color: var(--light-color); padding: var(--spacing-md); border-radius: var(--border-radius);">
+                    <div class="d-flex justify-between mb-1">
+                        <span>Estimated Cost:</span>
+                        <span class="fw-bold text-primary" id="estimatedCost">$325.00</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Available Cash:</span>
+                        <span class="text-success">$25,000.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" id="submitOrderBtn">Submit Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="d-none" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="text-center">
+            <div class="spinner mb-2"></div>
+            <div>Updating prices...</div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Advanced mobile specific functionality
+        let selectedRow = null;
+        let sortColumn = 'strike';
+        let sortDirection = 'asc';
+
+        function selectOption(row) {
+            // Clear previous selection
+            if (selectedRow) {
+                selectedRow.classList.remove('selected');
+            }
+            
+            // Select new row
+            selectedRow = row;
+            row.classList.add('selected');
+            
+            // Update quick action bar
+            const type = row.dataset.type;
+            const strike = row.dataset.strike;
+            const lastPrice = row.querySelector('.price-cell[data-price]').textContent;
+            
+            document.getElementById('selectedOption').textContent = `AAPL $${strike} ${type.toUpperCase()}`;
+            document.getElementById('selectedPrice').textContent = `Last: $${lastPrice}`;
+            document.getElementById('quickActionBar').classList.remove('d-none');
+        }
+
+        function clearSelection() {
+            if (selectedRow) {
+                selectedRow.classList.remove('selected');
+                selectedRow = null;
+            }
+            document.getElementById('quickActionBar').classList.add('d-none');
+        }
+
+        function quickBuy() {
+            if (!selectedRow) return;
+            
+            const type = selectedRow.dataset.type;
+            const strike = selectedRow.dataset.strike;
+            const price = selectedRow.querySelector('.price-cell[data-price]').dataset.price;
+            
+            document.getElementById('optionSummary').textContent = `AAPL $${strike} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            document.getElementById('actionSummary').textContent = 'Buy to Open';
+            document.getElementById('marketPriceSummary').textContent = `$${price}`;
+            document.getElementById('modalTitle').textContent = `Buy ${type.charAt(0).toUpperCase() + type.slice(1)} Option`;
+            
+            updateOrderCost();
+            document.getElementById('orderModal').classList.add('show');
+        }
+
+        function quickSell() {
+            if (!selectedRow) return;
+            
+            const type = selectedRow.dataset.type;
+            const strike = selectedRow.dataset.strike;
+            const price = selectedRow.querySelector('.price-cell[data-price]').dataset.price;
+            
+            document.getElementById('optionSummary').textContent = `AAPL $${strike} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            document.getElementById('actionSummary').textContent = 'Sell to Open';
+            document.getElementById('marketPriceSummary').textContent = `$${price}`;
+            document.getElementById('modalTitle').textContent = `Sell ${type.charAt(0).toUpperCase() + type.slice(1)} Option`;
+            
+            updateOrderCost();
+            document.getElementById('orderModal').classList.add('show');
+        }
+
+        function adjustQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            const currentValue = parseInt(quantityInput.value) || 1;
+            const newValue = Math.max(1, Math.min(100, currentValue + change));
+            quantityInput.value = newValue;
+            updateOrderCost();
+        }
+
+        function toggleLimitPrice() {
+            const orderType = document.getElementById('orderType').value;
+            const limitGroup = document.getElementById('limitPriceGroup');
+            
+            if (orderType === 'limit') {
+                limitGroup.classList.remove('d-none');
+                setMidPrice();
+            } else {
+                limitGroup.classList.add('d-none');
+            }
+            
+            updateOrderCost();
+        }
+
+        function setMidPrice() {
+            if (!selectedRow) return;
+            
+            const bidPrice = parseFloat(selectedRow.querySelector('.price-cell').dataset.price) - 0.05;
+            const askPrice = parseFloat(selectedRow.querySelector('.price-cell').dataset.price) + 0.05;
+            const midPrice = ((bidPrice + askPrice) / 2).toFixed(2);
+            
+            document.getElementById('limitPrice').value = midPrice;
+            updateOrderCost();
+        }
+
+        function updateOrderCost() {
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            const orderType = document.getElementById('orderType').value;
+            let price;
+            
+            if (orderType === 'limit') {
+                price = parseFloat(document.getElementById('limitPrice').value) || 0;
+            } else {
+                price = parseFloat(document.getElementById('marketPriceSummary').textContent.replace('$', ''));
+            }
+            
+            const totalCost = (quantity * price * 100).toFixed(2);
+            document.getElementById('estimatedCost').textContent = `$${totalCost}`;
+        }
+
+        // Add sorting functionality
+        document.querySelectorAll('th[data-sort]').forEach(header => {
+            header.addEventListener('click', function() {
+                const column = this.dataset.sort;
+                
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = column;
+                    sortDirection = 'asc';
+                }
+                
+                // Update sort indicators
+                document.querySelectorAll('.sort-indicator').forEach(indicator => {
+                    indicator.remove();
+                });
+                
+                const indicator = document.createElement('span');
+                indicator.className = 'sort-indicator active';
+                indicator.textContent = sortDirection === 'asc' ? '↑' : '↓';
+                this.appendChild(indicator);
+                
+                sortTable();
+            });
+        });
+
+        function sortTable() {
+            const tbody = document.getElementById('optionsTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr:not(.separator-row)'));
+            
+            rows.sort((a, b) => {
+                let aValue, bValue;
+                
+                switch (sortColumn) {
+                    case 'type':
+                        aValue = a.dataset.type;
+                        bValue = b.dataset.type;
+                        break;
+                    case 'strike':
+                        aValue = parseFloat(a.dataset.strike);
+                        bValue = parseFloat(b.dataset.strike);
+                        break;
+                    case 'volume':
+                        aValue = parseInt(a.querySelector('.volume-cell').dataset.volume);
+                        bValue = parseInt(b.querySelector('.volume-cell').dataset.volume);
+                        break;
+                    default:
+                        const aCell = a.querySelector(`.${sortColumn}-cell`);
+                        const bCell = b.querySelector(`.${sortColumn}-cell`);
+                        if (aCell && bCell) {
+                            aValue = parseFloat(aCell.textContent.replace(/[^0-9.-]/g, ''));
+                            bValue = parseFloat(bCell.textContent.replace(/[^0-9.-]/g, ''));
+                        }
+                }
+                
+                if (sortDirection === 'asc') {
+                    return aValue > bValue ? 1 : -1;
+                } else {
+                    return aValue < bValue ? 1 : -1;
+                }
+            });
+            
+            // Clear tbody and re-add rows
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Re-add separator
+            const separator = document.createElement('tr');
+            separator.className = 'separator-row';
+            separator.innerHTML = '<td colspan="8" style="background-color: var(--gray-200); text-align: center; font-weight: 600; color: var(--primary-color); font-size: var(--font-size-sm);">Current Stock Price: $150.25</td>';
+            
+            // Insert separator at appropriate position based on strike prices
+            const callRows = rows.filter(row => row.dataset.type === 'call');
+            const putRows = rows.filter(row => row.dataset.type === 'put');
+            
+            callRows.forEach(row => tbody.appendChild(row));
+            tbody.appendChild(separator);
+            putRows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Simulate real-time price updates
+        function simulatePriceUpdates() {
+            const priceCells = document.querySelectorAll('.price-cell[data-price]');
+            
+            priceCells.forEach(cell => {
+                if (Math.random() < 0.1) { // 10% chance of price change
+                    const currentPrice = parseFloat(cell.dataset.price);
+                    const change = (Math.random() - 0.5) * 0.10; // Random change ±$0.05
+                    const newPrice = Math.max(0.01, currentPrice + change);
+                    
+                    cell.dataset.price = newPrice.toFixed(2);
+                    cell.textContent = newPrice.toFixed(2);
+                    
+                    // Add flash effect
+                    cell.classList.remove('price-up', 'price-down');
+                    if (change > 0) {
+                        cell.classList.add('price-up');
+                    } else if (change < 0) {
+                        cell.classList.add('price-down');
+                    }
+                    
+                    setTimeout(() => {
+                        cell.classList.remove('price-up', 'price-down');
+                    }, 500);
+                }
+            });
+        }
+
+        // Start price updates
+        setInterval(simulatePriceUpdates, 2000);
+
+        // Filter functionality
+        document.getElementById('callsFilter').addEventListener('click', function() {
+            filterOptions('call');
+            setActiveFilter(this);
+        });
+
+        document.getElementById('putsFilter').addEventListener('click', function() {
+            filterOptions('put');
+            setActiveFilter(this);
+        });
+
+        document.getElementById('allFilter').addEventListener('click', function() {
+            filterOptions('all');
+            setActiveFilter(this);
+        });
+
+        function filterOptions(type) {
+            const rows = document.querySelectorAll('.option-row');
+            const separator = document.querySelector('.separator-row');
+            
+            rows.forEach(row => {
+                if (type === 'all' || row.dataset.type === type) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            separator.style.display = type === 'all' ? '' : 'none';
+        }
+
+        function setActiveFilter(button) {
+            document.querySelectorAll('#callsFilter, #putsFilter, #allFilter, #itmFilter, #otmFilter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+    </script>
+    
+    <style>
+        .option-row:hover {
+            background-color: var(--gray-100);
+            cursor: pointer;
+        }
+        
+        .option-row.selected {
+            background-color: rgba(0, 122, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .high-volume {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .separator-row td {
+            padding: 0.5rem !important;
+        }
+        
+        .volume-spike {
+            position: relative;
+        }
+        
+        .volume-spike::after {
+            content: '🔥';
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            font-size: 0.7rem;
+        }
+        
+        th[data-sort] {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th[data-sort]:hover {
+            background-color: var(--gray-200);
+        }
+        
+        .sort-indicator {
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+            color: var(--primary-color);
+        }
+    </style>
 </body>
 </html>
