@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Expiry Comparison - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <div class="header-actions d-flex gap-sm">
+                    <button class="btn btn-outline-primary btn-sm" onclick="addExpiry()">Add Expiry</button>
+                    <button class="btn btn-primary btn-sm" onclick="buildCalendarSpread()">Build Calendar Spread</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportComparison()">Export</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 1.5rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-2">
+                <div>
+                    <h1 style="font-size: 1.75rem; margin: 0; font-weight: 700;">AAPL Multi-Expiry Analysis</h1>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Compare options across different expiration dates</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 1.5rem; font-weight: 600;">$150.25</div>
+                    <div style="font-size: 0.875rem; opacity: 0.9;">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div class="comparison-stats d-flex gap-xl" style="font-size: 0.875rem; opacity: 0.9;">
+                <div>Expiries: <span class="fw-bold" id="expiryCount">4</span></div>
+                <div>Strikes: <span class="fw-bold">145-155</span></div>
+                <div>Total Options: <span class="fw-bold" id="totalOptionsCount">24</span></div>
+                <div>Calendar Opportunities: <span class="fw-bold text-warning" id="calendarOpps">8</span></div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <!-- Comparison Controls -->
+        <section class="comparison-controls mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.125rem; margin: 0;">Comparison Settings</h2>
+                </div>
+                <div class="card-body">
+                    <div class="control-row d-flex gap-md align-center" style="flex-wrap: wrap;">
+                        <div class="form-group mb-0">
+                            <label class="form-label">Strike Focus</label>
+                            <select class="form-control form-select" id="strikeFocus" onchange="updateComparison()">
+                                <option value="atm">At-the-Money ($150)</option>
+                                <option value="145">$145 Strike</option>
+                                <option value="155">$155 Strike</option>
+                                <option value="all">All Strikes</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-0">
+                            <label class="form-label">Option Type</label>
+                            <select class="form-control form-select" id="optionTypeFilter" onchange="updateComparison()">
+                                <option value="both">Calls & Puts</option>
+                                <option value="calls">Calls Only</option>
+                                <option value="puts">Puts Only</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-0">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-control form-select" id="sortBy" onchange="updateComparison()">
+                                <option value="dte">Days to Expiry</option>
+                                <option value="iv">Implied Volatility</option>
+                                <option value="theta">Time Decay (Theta)</option>
+                                <option value="volume">Volume</option>
+                                <option value="premium">Premium</option>
+                            </select>
+                        </div>
+                        
+                        <div class="view-toggles d-flex gap-sm">
+                            <button class="btn btn-outline-primary btn-sm active" id="tableViewBtn" onclick="switchView('table')">Table</button>
+                            <button class="btn btn-outline-primary btn-sm" id="chartViewBtn" onclick="switchView('chart')">Chart</button>
+                            <button class="btn btn-outline-primary btn-sm" id="calendarViewBtn" onclick="switchView('calendar')">Calendar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expiry Tabs -->
+        <section class="expiry-tabs mb-3">
+            <div class="nav-tabs" style="position: relative; background: white; border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+                <button class="nav-tab active" data-expiry="2025-09-14" onclick="switchExpiry(this)">
+                    Sep 14 (7d)
+                    <span class="tab-badge">High θ</span>
+                </button>
+                <button class="nav-tab" data-expiry="2025-09-21" onclick="switchExpiry(this)">
+                    Sep 21 (14d)
+                    <span class="tab-badge">ATM</span>
+                </button>
+                <button class="nav-tab" data-expiry="2025-10-19" onclick="switchExpiry(this)">
+                    Oct 19 (42d)
+                    <span class="tab-badge">Liquid</span>
+                </button>
+                <button class="nav-tab" data-expiry="2025-12-19" onclick="switchExpiry(this)">
+                    Dec 19 (104d)
+                    <span class="tab-badge">Low θ</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Main Comparison View -->
+        <section class="comparison-view" id="tableView">
+            <div class="card">
+                <div class="card-header d-flex justify-between align-center">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Side-by-Side Comparison</h3>
+                    <div class="comparison-metrics d-flex gap-md" style="font-size: 0.875rem;">
+                        <div>IV Range: <span class="fw-bold">24.5% - 35.2%</span></div>
+                        <div>Theta Range: <span class="fw-bold">-0.45 to -0.08</span></div>
+                        <div>Best Calendar: <span class="fw-bold text-success">$150 Strike</span></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="comparison-table-container">
+                        <table class="table" id="comparisonTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 100px;">Strike/Type</th>
+                                    <th style="min-width: 120px;">Sep 14 (7d)</th>
+                                    <th style="min-width: 120px;">Sep 21 (14d)</th>
+                                    <th style="min-width: 120px;">Oct 19 (42d)</th>
+                                    <th style="min-width: 120px;">Dec 19 (104d)</th>
+                                    <th style="min-width: 100px;">Calendar Spread</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- $145 Calls -->
+                                <tr class="comparison-row" data-strike="145" data-type="call">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$145</div>
+                                        <div class="option-type call">CALL</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$5.85</div>
+                                            <div class="metrics">
+                                                <span>IV: 26.8%</span>
+                                                <span>Δ: 0.78</span>
+                                                <span>θ: -0.35</span>
+                                            </div>
+                                            <div class="volume">Vol: 892</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$6.75</div>
+                                            <div class="metrics">
+                                                <span>IV: 24.5%</span>
+                                                <span>Δ: 0.67</span>
+                                                <span>θ: -0.12</span>
+                                            </div>
+                                            <div class="volume">Vol: 1.2K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$8.45</div>
+                                            <div class="metrics">
+                                                <span>IV: 27.2%</span>
+                                                <span>Δ: 0.71</span>
+                                                <span>θ: -0.08</span>
+                                            </div>
+                                            <div class="volume">Vol: 645</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$11.20</div>
+                                            <div class="metrics">
+                                                <span>IV: 29.1%</span>
+                                                <span>Δ: 0.69</span>
+                                                <span>θ: -0.04</span>
+                                            </div>
+                                            <div class="volume">Vol: 234</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-outline-success btn-sm" onclick="buildCalendarSpread(145, 'call')">
+                                            +$0.90
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- $150 Calls -->
+                                <tr class="comparison-row" data-strike="150" data-type="call">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$150</div>
+                                        <div class="option-type call">CALL</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$2.15</div>
+                                            <div class="metrics">
+                                                <span>IV: 32.1%</span>
+                                                <span>Δ: 0.42</span>
+                                                <span>θ: -0.45</span>
+                                            </div>
+                                            <div class="volume">Vol: 3.2K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$3.25</div>
+                                            <div class="metrics">
+                                                <span>IV: 28.2%</span>
+                                                <span>Δ: 0.52</span>
+                                                <span>θ: -0.18</span>
+                                            </div>
+                                            <div class="volume high-volume">Vol: 2.9K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$5.80</div>
+                                            <div class="metrics">
+                                                <span>IV: 29.8%</span>
+                                                <span>Δ: 0.56</span>
+                                                <span>θ: -0.11</span>
+                                            </div>
+                                            <div class="volume">Vol: 1.1K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$8.90</div>
+                                            <div class="metrics">
+                                                <span>IV: 31.5%</span>
+                                                <span>Δ: 0.54</span>
+                                                <span>θ: -0.06</span>
+                                            </div>
+                                            <div class="volume">Vol: 567</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-success btn-sm" onclick="buildCalendarSpread(150, 'call')">
+                                            +$1.10
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- $155 Calls -->
+                                <tr class="comparison-row" data-strike="155" data-type="call">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$155</div>
+                                        <div class="option-type call">CALL</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$0.35</div>
+                                            <div class="metrics">
+                                                <span>IV: 35.2%</span>
+                                                <span>Δ: 0.12</span>
+                                                <span>θ: -0.28</span>
+                                            </div>
+                                            <div class="volume">Vol: 1.8K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$1.45</div>
+                                            <div class="metrics">
+                                                <span>IV: 31.8%</span>
+                                                <span>Δ: 0.31</span>
+                                                <span>θ: -0.14</span>
+                                            </div>
+                                            <div class="volume">Vol: 756</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$3.20</div>
+                                            <div class="metrics">
+                                                <span>IV: 33.1%</span>
+                                                <span>Δ: 0.38</span>
+                                                <span>θ: -0.09</span>
+                                            </div>
+                                            <div class="volume">Vol: 423</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$6.15</div>
+                                            <div class="metrics">
+                                                <span>IV: 34.8%</span>
+                                                <span>Δ: 0.42</span>
+                                                <span>θ: -0.05</span>
+                                            </div>
+                                            <div class="volume">Vol: 189</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-outline-success btn-sm" onclick="buildCalendarSpread(155, 'call')">
+                                            +$1.10
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Puts section -->
+                                <tr class="separator-row">
+                                    <td colspan="6" style="background-color: var(--gray-200); text-align: center; font-weight: 600; color: var(--primary-color); padding: 0.5rem;">
+                                        PUT OPTIONS
+                                    </td>
+                                </tr>
+
+                                <!-- $145 Puts -->
+                                <tr class="comparison-row" data-strike="145" data-type="put">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$145</div>
+                                        <div class="option-type put">PUT</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$0.45</div>
+                                            <div class="metrics">
+                                                <span>IV: 28.9%</span>
+                                                <span>Δ: -0.22</span>
+                                                <span>θ: -0.25</span>
+                                            </div>
+                                            <div class="volume">Vol: 567</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$1.85</div>
+                                            <div class="metrics">
+                                                <span>IV: 25.3%</span>
+                                                <span>Δ: -0.33</span>
+                                                <span>θ: -0.13</span>
+                                            </div>
+                                            <div class="volume">Vol: 934</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$3.65</div>
+                                            <div class="metrics">
+                                                <span>IV: 27.8%</span>
+                                                <span>Δ: -0.29</span>
+                                                <span>θ: -0.08</span>
+                                            </div>
+                                            <div class="volume">Vol: 312</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$6.45</div>
+                                            <div class="metrics">
+                                                <span>IV: 30.2%</span>
+                                                <span>Δ: -0.31</span>
+                                                <span>θ: -0.04</span>
+                                            </div>
+                                            <div class="volume">Vol: 145</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-outline-success btn-sm" onclick="buildCalendarSpread(145, 'put')">
+                                            +$1.40
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- $150 Puts -->
+                                <tr class="comparison-row" data-strike="150" data-type="put">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$150</div>
+                                        <div class="option-type put">PUT</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$2.40</div>
+                                            <div class="metrics">
+                                                <span>IV: 31.5%</span>
+                                                <span>Δ: -0.58</span>
+                                                <span>θ: -0.42</span>
+                                            </div>
+                                            <div class="volume">Vol: 2.1K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$3.65</div>
+                                            <div class="metrics">
+                                                <span>IV: 28.7%</span>
+                                                <span>Δ: -0.48</span>
+                                                <span>θ: -0.17</span>
+                                            </div>
+                                            <div class="volume high-volume">Vol: 1.5K</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$6.20</div>
+                                            <div class="metrics">
+                                                <span>IV: 30.1%</span>
+                                                <span>Δ: -0.44</span>
+                                                <span>θ: -0.12</span>
+                                            </div>
+                                            <div class="volume">Vol: 823</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$9.30</div>
+                                            <div class="metrics">
+                                                <span>IV: 32.0%</span>
+                                                <span>Δ: -0.46</span>
+                                                <span>θ: -0.06</span>
+                                            </div>
+                                            <div class="volume">Vol: 398</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-success btn-sm" onclick="buildCalendarSpread(150, 'put')">
+                                            +$1.25
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- $155 Puts -->
+                                <tr class="comparison-row" data-strike="155" data-type="put">
+                                    <td class="strike-label">
+                                        <div class="fw-bold">$155</div>
+                                        <div class="option-type put">PUT</div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="7">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$7.25</div>
+                                            <div class="metrics">
+                                                <span>IV: 33.8%</span>
+                                                <span>Δ: -0.88</span>
+                                                <span>θ: -0.31</span>
+                                            </div>
+                                            <div class="volume">Vol: 445</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="14">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$6.95</div>
+                                            <div class="metrics">
+                                                <span>IV: 32.1%</span>
+                                                <span>Δ: -0.69</span>
+                                                <span>θ: -0.11</span>
+                                            </div>
+                                            <div class="volume">Vol: 678</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="42">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$8.60</div>
+                                            <div class="metrics">
+                                                <span>IV: 33.5%</span>
+                                                <span>Δ: -0.62</span>
+                                                <span>θ: -0.09</span>
+                                            </div>
+                                            <div class="volume">Vol: 289</div>
+                                        </div>
+                                    </td>
+                                    <td class="expiry-cell" data-expiry="104">
+                                        <div class="option-data">
+                                            <div class="price fw-bold">$11.75</div>
+                                            <div class="metrics">
+                                                <span>IV: 35.1%</span>
+                                                <span>Δ: -0.58</span>
+                                                <span>θ: -0.05</span>
+                                            </div>
+                                            <div class="volume">Vol: 167</div>
+                                        </div>
+                                    </td>
+                                    <td class="calendar-cell">
+                                        <button class="btn btn-outline-success btn-sm" onclick="buildCalendarSpread(155, 'put')">
+                                            +$0.30
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chart View -->
+        <section class="comparison-view d-none" id="chartView">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Volatility & Time Decay Visualization</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-controls mb-3 d-flex gap-sm">
+                        <button class="btn btn-outline-primary btn-sm active" onclick="switchChart('iv')">IV Term Structure</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchChart('theta')">Theta Decay</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchChart('skew')">Volatility Skew</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchChart('volume')">Volume Profile</button>
+                    </div>
+                    <div class="chart-placeholder" style="height: 400px; background-color: var(--gray-100); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: var(--gray-600);">
+                        📊 Interactive Charts<br>
+                        <small>Implied volatility term structure, theta decay curves, and volume analysis</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar Spread View -->
+        <section class="comparison-view d-none" id="calendarView">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Calendar Spread Opportunities</h3>
+                </div>
+                <div class="card-body">
+                    <div class="calendar-opportunities">
+                        <div class="opportunity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                            <!-- Best Calendar Spread -->
+                            <div class="calendar-opportunity" style="border: 2px solid var(--success-color); border-radius: var(--border-radius-lg); padding: 1rem;">
+                                <div class="opportunity-header d-flex justify-between align-center mb-2">
+                                    <div class="fw-bold text-success">⭐ Best Calendar</div>
+                                    <div class="fw-bold text-success">+$1.25 Credit</div>
+                                </div>
+                                <div class="opportunity-details">
+                                    <div>SELL: Sep 14 $150 Put @ $2.40</div>
+                                    <div>BUY: Sep 21 $150 Put @ $3.65</div>
+                                    <div class="mt-2" style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Max profit if AAPL stays near $150 at Sep 14 expiry
+                                    </div>
+                                </div>
+                                <button class="btn btn-success btn-sm mt-2" onclick="executeCalendarSpread(150, 'put', 'Sep14', 'Sep21')">Execute Spread</button>
+                            </div>
+
+                            <!-- High IV Calendar -->
+                            <div class="calendar-opportunity" style="border: 1px solid var(--warning-color); border-radius: var(--border-radius-lg); padding: 1rem;">
+                                <div class="opportunity-header d-flex justify-between align-center mb-2">
+                                    <div class="fw-bold text-warning">🔥 High IV</div>
+                                    <div class="fw-bold text-success">+$1.10</div>
+                                </div>
+                                <div class="opportunity-details">
+                                    <div>SELL: Sep 14 $155 Call @ $0.35</div>
+                                    <div>BUY: Sep 21 $155 Call @ $1.45</div>
+                                    <div class="mt-2" style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Capitalize on elevated short-term volatility
+                                    </div>
+                                </div>
+                                <button class="btn btn-warning btn-sm mt-2" onclick="executeCalendarSpread(155, 'call', 'Sep14', 'Sep21')">Execute Spread</button>
+                            </div>
+
+                            <!-- Diagonal Spread -->
+                            <div class="calendar-opportunity" style="border: 1px solid var(--primary-color); border-radius: var(--border-radius-lg); padding: 1rem;">
+                                <div class="opportunity-header d-flex justify-between align-center mb-2">
+                                    <div class="fw-bold text-primary">📈 Diagonal</div>
+                                    <div class="fw-bold text-success">+$0.90</div>
+                                </div>
+                                <div class="opportunity-details">
+                                    <div>SELL: Sep 14 $145 Call @ $5.85</div>
+                                    <div>BUY: Oct 19 $150 Call @ $5.80</div>
+                                    <div class="mt-2" style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Bullish diagonal spread with time decay advantage
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-sm mt-2" onclick="executeDiagonalSpread(145, 150, 'call')">Execute Spread</button>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Spread Analysis -->
+                        <div class="calendar-analysis mt-3">
+                            <h4 style="font-size: 1rem; margin-bottom: 1rem;">Calendar Spread Analysis Matrix</h4>
+                            <div class="analysis-table-container">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Strike</th>
+                                            <th>Type</th>
+                                            <th>Short Leg (Near)</th>
+                                            <th>Long Leg (Far)</th>
+                                            <th>Net Credit</th>
+                                            <th>Max Profit</th>
+                                            <th>Breakeven</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>$145</td>
+                                            <td><span class="option-type call">C</span></td>
+                                            <td>Sep14 @ $5.85</td>
+                                            <td>Sep21 @ $6.75</td>
+                                            <td class="text-success">+$0.90</td>
+                                            <td>$1.45</td>
+                                            <td>$146.10</td>
+                                            <td><button class="btn btn-outline-success btn-sm">Build</button></td>
+                                        </tr>
+                                        <tr style="background-color: rgba(40, 167, 69, 0.1);">
+                                            <td>$150</td>
+                                            <td><span class="option-type call">C</span></td>
+                                            <td>Sep14 @ $2.15</td>
+                                            <td>Sep21 @ $3.25</td>
+                                            <td class="text-success">+$1.10</td>
+                                            <td>$2.35</td>
+                                            <td>$148.90</td>
+                                            <td><button class="btn btn-success btn-sm">Best</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>$155</td>
+                                            <td><span class="option-type call">C</span></td>
+                                            <td>Sep14 @ $0.35</td>
+                                            <td>Sep21 @ $1.45</td>
+                                            <td class="text-success">+$1.10</td>
+                                            <td>$1.85</td>
+                                            <td>$153.90</td>
+                                            <td><button class="btn btn-outline-success btn-sm">Build</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Insights -->
+        <section class="strategy-insights mt-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Multi-Expiry Insights</h3>
+                </div>
+                <div class="card-body">
+                    <div class="insights-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div class="insight-card" style="border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 1rem;">
+                            <div class="insight-icon text-success" style="font-size: 1.5rem; margin-bottom: 0.5rem;">📊</div>
+                            <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Term Structure</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                IV is elevated in near-term options, creating opportunities for calendar spreads. 
+                                The 7-day options show 3.5% higher IV than 14-day.
+                            </p>
+                        </div>
+                        
+                        <div class="insight-card" style="border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 1rem;">
+                            <div class="insight-icon text-warning" style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏱️</div>
+                            <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Time Decay</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Theta is highest for 7-day options (-$0.42 for ATM), creating strong time decay advantage 
+                                for calendar spread sellers.
+                            </p>
+                        </div>
+                        
+                        <div class="insight-card" style="border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 1rem;">
+                            <div class="insight-icon text-primary" style="font-size: 1.5rem; margin-bottom: 0.5rem;">💡</div>
+                            <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Best Strategies</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                ATM calendar spreads offer best risk/reward. Consider selling near-term and buying 
+                                2-week options for optimal time decay capture.
+                            </p>
+                        </div>
+                        
+                        <div class="insight-card" style="border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 1rem;">
+                            <div class="insight-icon text-danger" style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
+                            <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Risk Factors</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Upcoming earnings in 3 weeks may affect longer-term options. Monitor IV crush 
+                                risk for post-earnings expiries.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Calendar Spread Modal -->
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="calendarModalTitle">Calendar Spread Builder</h3>
+                <button class="modal-close" onclick="closeCalendarModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="calendarModalBody">
+                <!-- Content populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" onclick="closeCalendarModal()">Cancel</button>
+                <button class="btn btn-success" onclick="executeCalendarFromModal()">Execute Spread</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        let currentView = 'table';
+        let currentExpiry = '2025-09-21';
+        let selectedCalendarSpread = null;
+
+        function switchView(view) {
+            // Update button states
+            document.querySelectorAll('.view-toggles .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(view + 'ViewBtn').classList.add('active');
+            
+            // Show/hide views
+            document.querySelectorAll('.comparison-view').forEach(section => {
+                section.classList.add('d-none');
+            });
+            document.getElementById(view + 'View').classList.remove('d-none');
+            
+            currentView = view;
+        }
+
+        function switchExpiry(tab) {
+            // Update tab states
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            tab.classList.add('active');
+            
+            currentExpiry = tab.dataset.expiry;
+            updateComparison();
+        }
+
+        function switchChart(chartType) {
+            // Update chart button states
+            document.querySelectorAll('.chart-controls .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // In a real implementation, this would update the chart
+            const chartPlaceholder = document.querySelector('.chart-placeholder');
+            const chartLabels = {
+                'iv': '📈 Implied Volatility Term Structure\nShowing IV across different expiration dates',
+                'theta': '⏰ Time Decay (Theta) Analysis\nDaily value loss across strikes and expiries',
+                'skew': '📊 Volatility Skew\nIV differences between strikes',
+                'volume': '📊 Volume Profile Analysis\nTrading activity across strikes and expiries'
+            };
+            
+            chartPlaceholder.innerHTML = chartLabels[chartType] || chartLabels['iv'];
+        }
+
+        function updateComparison() {
+            const strikeFocus = document.getElementById('strikeFocus').value;
+            const optionType = document.getElementById('optionTypeFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            // Filter and update table based on selected criteria
+            const rows = document.querySelectorAll('.comparison-row');
+            
+            rows.forEach(row => {
+                const strike = row.dataset.strike;
+                const type = row.dataset.type;
+                let show = true;
+                
+                // Filter by strike focus
+                if (strikeFocus !== 'all' && strikeFocus !== 'atm') {
+                    show = strike === strikeFocus;
+                } else if (strikeFocus === 'atm') {
+                    show = strike === '150'; // ATM strike
+                }
+                
+                // Filter by option type
+                if (optionType !== 'both') {
+                    show = show && ((optionType === 'calls' && type === 'call') || (optionType === 'puts' && type === 'put'));
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+            
+            // Update statistics
+            updateStatistics();
+        }
+
+        function updateStatistics() {
+            const visibleRows = document.querySelectorAll('.comparison-row:not([style*="display: none"])');
+            const calendarOpportunities = document.querySelectorAll('.calendar-cell .btn').length;
+            
+            document.getElementById('totalOptionsCount').textContent = visibleRows.length * 4; // 4 expiries
+            document.getElementById('calendarOpps').textContent = calendarOpportunities;
+        }
+
+        function buildCalendarSpread(strike, type, shortExpiry = 'Sep14', longExpiry = 'Sep21') {
+            selectedCalendarSpread = { strike, type, shortExpiry, longExpiry };
+            
+            const modal = document.getElementById('calendarModal');
+            const title = document.getElementById('calendarModalTitle');
+            const body = document.getElementById('calendarModalBody');
+            
+            title.textContent = `${type.toUpperCase()} Calendar Spread - $${strike}`;
+            
+            // Get option data for the spread
+            const shortPrice = getOptionPrice(strike, type, shortExpiry);
+            const longPrice = getOptionPrice(strike, type, longExpiry);
+            const netCredit = shortPrice - longPrice;
+            
+            body.innerHTML = `
+                <div class="calendar-spread-details">
+                    <div class="spread-summary mb-3" style="background-color: var(--gray-100); padding: 1rem; border-radius: var(--border-radius);">
+                        <h4 style="font-size: 1rem; margin-bottom: 1rem;">Calendar Spread Details</h4>
+                        <div class="spread-legs">
+                            <div class="leg d-flex justify-between mb-2">
+                                <span><strong>SELL:</strong> ${shortExpiry} AAPL $${strike} ${type.toUpperCase()}</span>
+                                <span class="fw-bold text-success">+$${shortPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="leg d-flex justify-between mb-2">
+                                <span><strong>BUY:</strong> ${longExpiry} AAPL $${strike} ${type.toUpperCase()}</span>
+                                <span class="fw-bold text-danger">-$${longPrice.toFixed(2)}</span>
+                            </div>
+                            <hr>
+                            <div class="net-result d-flex justify-between">
+                                <span><strong>Net ${netCredit > 0 ? 'Credit' : 'Debit'}:</strong></span>
+                                <span class="fw-bold ${netCredit > 0 ? 'text-success' : 'text-danger'}">${netCredit > 0 ? '+' : ''}$${netCredit.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="spread-analysis">
+                        <h4 style="font-size: 1rem; margin-bottom: 1rem;">Risk Analysis</h4>
+                        <div class="analysis-metrics">
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Max Profit:</span>
+                                <span class="fw-bold text-success">$${(Math.abs(netCredit) * 1.5).toFixed(2)}</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Max Loss:</span>
+                                <span class="fw-bold text-danger">$${Math.abs(netCredit).toFixed(2)}</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Breakeven:</span>
+                                <span class="fw-bold">$${strike}</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between">
+                                <span>Days to Max Profit:</span>
+                                <span class="fw-bold">${shortExpiry === 'Sep14' ? '7' : '14'} days</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quantity-selection mt-3">
+                        <label class="form-label">Quantity (Spreads)</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="quantity-btn" onclick="adjustCalendarQuantity(-1)">-</button>
+                            <input type="number" class="form-control quantity-input" id="calendarQuantity" value="1" min="1" max="50">
+                            <button type="button" class="quantity-btn" onclick="adjustCalendarQuantity(1)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="total-cost mt-3" style="background-color: var(--light-color); padding: 1rem; border-radius: var(--border-radius);">
+                        <div class="d-flex justify-between">
+                            <span>Total ${netCredit > 0 ? 'Credit' : 'Cost'}:</span>
+                            <span class="fw-bold text-primary" id="totalCalendarCost">${netCredit > 0 ? '+' : ''}$${(netCredit * 100).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function getOptionPrice(strike, type, expiry) {
+            // Simplified price lookup - in real app this would be from data
+            const prices = {
+                'Sep14': {
+                    '145': { 'call': 5.85, 'put': 0.45 },
+                    '150': { 'call': 2.15, 'put': 2.40 },
+                    '155': { 'call': 0.35, 'put': 7.25 }
+                },
+                'Sep21': {
+                    '145': { 'call': 6.75, 'put': 1.85 },
+                    '150': { 'call': 3.25, 'put': 3.65 },
+                    '155': { 'call': 1.45, 'put': 6.95 }
+                }
+            };
+            
+            return prices[expiry]?.[strike]?.[type] || 0;
+        }
+
+        function adjustCalendarQuantity(change) {
+            const input = document.getElementById('calendarQuantity');
+            const currentValue = parseInt(input.value) || 1;
+            const newValue = Math.max(1, Math.min(50, currentValue + change));
+            input.value = newValue;
+            updateCalendarCost();
+        }
+
+        function updateCalendarCost() {
+            if (!selectedCalendarSpread) return;
+            
+            const quantity = parseInt(document.getElementById('calendarQuantity').value) || 1;
+            const { strike, type, shortExpiry, longExpiry } = selectedCalendarSpread;
+            
+            const shortPrice = getOptionPrice(strike, type, shortExpiry);
+            const longPrice = getOptionPrice(strike, type, longExpiry);
+            const netCredit = shortPrice - longPrice;
+            const totalCost = netCredit * quantity * 100;
+            
+            document.getElementById('totalCalendarCost').textContent = (totalCost > 0 ? '+' : '') + '$' + totalCost.toFixed(2);
+        }
+
+        function executeCalendarSpread(strike, type, shortExpiry, longExpiry) {
+            if (arguments.length === 0) {
+                // Called from comparison table
+                buildCalendarSpread(selectedCalendarSpread.strike, selectedCalendarSpread.type);
+                return;
+            }
+            
+            buildCalendarSpread(strike, type, shortExpiry, longExpiry);
+        }
+
+        function executeCalendarFromModal() {
+            const quantity = parseInt(document.getElementById('calendarQuantity').value) || 1;
+            const { strike, type } = selectedCalendarSpread;
+            
+            closeCalendarModal();
+            
+            // Show success message
+            setTimeout(() => {
+                alert(`Calendar spread executed successfully!\n\n${quantity} × $${strike} ${type.toUpperCase()} calendar spread\n\nOrder ID: CAL-${Math.random().toString(36).substr(2, 8).toUpperCase()}`);
+            }, 500);
+        }
+
+        function executeDiagonalSpread(shortStrike, longStrike, type) {
+            alert(`Building diagonal spread:\nSELL: Sep 14 $${shortStrike} ${type.toUpperCase()}\nBUY: Oct 19 $${longStrike} ${type.toUpperCase()}\n\nThis would open the strategy builder with the diagonal spread pre-configured.`);
+        }
+
+        function closeCalendarModal() {
+            document.getElementById('calendarModal').classList.remove('show');
+            selectedCalendarSpread = null;
+        }
+
+        function addExpiry() {
+            alert('Add Expiry functionality would allow you to include additional expiration dates in the comparison.');
+        }
+
+        function exportComparison() {
+            alert('Export would generate a CSV or PDF report with the current comparison data and analysis.');
+        }
+
+        // Initialize comparison
+        updateComparison();
+        
+        // Add calendar quantity change listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.getElementById('calendarQuantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', updateCalendarCost);
+            }
+        });
+
+        // Simulate real-time price updates
+        function simulatePriceUpdates() {
+            const priceCells = document.querySelectorAll('.price');
+            
+            priceCells.forEach(cell => {
+                if (Math.random() < 0.05) { // 5% chance of price change
+                    const currentPrice = parseFloat(cell.textContent.replace('$', ''));
+                    const change = (Math.random() - 0.5) * 0.10;
+                    const newPrice = Math.max(0.01, currentPrice + change);
+                    
+                    cell.textContent = '$' + newPrice.toFixed(2);
+                    
+                    // Flash effect
+                    cell.style.backgroundColor = change > 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)';
+                    setTimeout(() => {
+                        cell.style.backgroundColor = '';
+                    }, 1000);
+                }
+            });
+        }
+
+        // Start price updates
+        setInterval(simulatePriceUpdates, 3000);
+    </script>
+
+    <style>
+        .nav-tab {
+            position: relative;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-tab.active {
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-badge {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+
+        .expiry-cell {
+            text-align: center;
+        }
+
+        .option-data .price {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .option-data .metrics {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-data .volume {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .high-volume {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .calendar-cell button {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .comparison-row:hover {
+            background-color: rgba(0, 122, 255, 0.05);
+        }
+
+        .strike-label {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .calendar-opportunity {
+            transition: transform var(--transition-fast);
+        }
+
+        .calendar-opportunity:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .insight-card {
+            transition: transform var(--transition-fast);
+        }
+
+        .insight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .comparison-table-container table {
+                min-width: 800px;
+            }
+            
+            .control-row {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            
+            .view-toggles {
+                order: -1;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</body>
+</html>

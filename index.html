@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptionTrade Pro - Options Trading Platform</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>=Ê</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">=Ê OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks (AAPL, TSLA, MSFT...)" id="stockSearch" autocomplete="off">
+                    <div id="searchSuggestions" class="search-suggestions d-none"></div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline-primary btn-sm" id="helpBtn">Help</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Welcome Section -->
+        <section class="welcome-section" style="padding: 2rem 0;">
+            <div class="text-center mb-3">
+                <h1 style="font-size: 2rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem;">
+                    Options Trading Made Simple
+                </h1>
+                <p style="font-size: 1.125rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+                    Professional-grade options trading platform with real-time data, advanced analytics, and intuitive mobile-first design
+                </p>
+            </div>
+        </section>
+
+        <!-- Quick Access Section -->
+        <section class="quick-access mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Recent Chains</h2>
+                </div>
+                <div class="card-body">
+                    <div class="recent-chains">
+                        <a href="mobile-beginner.html?symbol=AAPL" class="recent-chain">
+                            <div class="text-center">
+                                <div class="fw-bold">AAPL</div>
+                                <div class="text-success" style="font-size: 0.875rem;">$150.25</div>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=TSLA" class="recent-chain">
+                            <div class="text-center">
+                                <div class="fw-bold">TSLA</div>
+                                <div class="text-danger" style="font-size: 0.875rem;">$208.50</div>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=MSFT" class="recent-chain">
+                            <div class="text-center">
+                                <div class="fw-bold">MSFT</div>
+                                <div class="text-success" style="font-size: 0.875rem;">$378.90</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Stocks Section -->
+        <section class="popular-stocks mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Popular Options</h2>
+                </div>
+                <div class="card-body">
+                    <div class="popular-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                        <a href="mobile-beginner.html?symbol=AAPL" class="popular-stock">
+                            <div class="fw-bold">AAPL</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">Apple Inc.</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$150.25</span>
+                                <span class="text-success" style="font-size: 0.875rem;">+1.2%</span>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=TSLA" class="popular-stock">
+                            <div class="fw-bold">TSLA</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">Tesla Inc.</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$208.50</span>
+                                <span class="text-danger" style="font-size: 0.875rem;">-0.8%</span>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=MSFT" class="popular-stock">
+                            <div class="fw-bold">MSFT</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">Microsoft</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$378.90</span>
+                                <span class="text-success" style="font-size: 0.875rem;">+0.5%</span>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=GOOGL" class="popular-stock">
+                            <div class="fw-bold">GOOGL</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">Alphabet</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$138.75</span>
+                                <span class="text-success" style="font-size: 0.875rem;">+1.8%</span>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=AMZN" class="popular-stock">
+                            <div class="fw-bold">AMZN</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">Amazon</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$143.20</span>
+                                <span class="text-danger" style="font-size: 0.875rem;">-0.3%</span>
+                            </div>
+                        </a>
+                        <a href="mobile-beginner.html?symbol=NVDA" class="popular-stock">
+                            <div class="fw-bold">NVDA</div>
+                            <div class="text-muted" style="font-size: 0.875rem;">NVIDIA</div>
+                            <div class="d-flex justify-between align-center mt-1">
+                                <span class="fw-semibold">$875.30</span>
+                                <span class="text-success" style="font-size: 0.875rem;">+2.4%</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interface Options -->
+        <section class="interface-options mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Choose Your Trading Interface</h2>
+                </div>
+                <div class="card-body">
+                    <div class="interface-grid" style="display: grid; gap: 1rem;">
+                        <!-- Mobile Interfaces -->
+                        <div class="interface-option">
+                            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--primary-color);">=ñ Mobile Trading</h3>
+                            <div class="d-flex gap-sm" style="flex-wrap: wrap;">
+                                <a href="mobile-beginner.html" class="btn btn-outline-primary btn-sm">
+                                    Beginner Mode
+                                </a>
+                                <a href="mobile-advanced.html" class="btn btn-outline-primary btn-sm">
+                                    Advanced Mobile
+                                </a>
+                            </div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0.5rem 0 0 0;">
+                                Touch-optimized with card layouts and simplified views
+                            </p>
+                        </div>
+
+                        <!-- Desktop Interfaces -->
+                        <div class="interface-option">
+                            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--success-color);">=» Desktop Trading</h3>
+                            <div class="d-flex gap-sm" style="flex-wrap: wrap;">
+                                <a href="desktop-table.html" class="btn btn-outline-primary btn-sm">
+                                    Full Table View
+                                </a>
+                                <a href="filter-panel.html" class="btn btn-outline-primary btn-sm">
+                                    Advanced Filters
+                                </a>
+                                <a href="bulk-orders.html" class="btn btn-outline-primary btn-sm">
+                                    Bulk Orders
+                                </a>
+                            </div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0.5rem 0 0 0;">
+                                Professional tools with full Greeks, sorting, and bulk operations
+                            </p>
+                        </div>
+
+                        <!-- Strategy Tools -->
+                        <div class="interface-option">
+                            <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--warning-color);">=È Strategy Tools</h3>
+                            <div class="d-flex gap-sm" style="flex-wrap: wrap;">
+                                <a href="multi-expiry.html" class="btn btn-outline-primary btn-sm">
+                                    Multi-Expiry View
+                                </a>
+                                <a href="order-entry.html" class="btn btn-outline-primary btn-sm">
+                                    Order Entry Demo
+                                </a>
+                            </div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0.5rem 0 0 0;">
+                                Compare strategies across expiration dates and build complex trades
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Platform Features</h2>
+                </div>
+                <div class="card-body">
+                    <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <div class="feature">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">¡</div>
+                            <h4 style="margin-bottom: 0.5rem;">Real-Time Data</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Live option prices, Greeks, and volume with instant updates
+                            </p>
+                        </div>
+                        <div class="feature">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">=Ê</div>
+                            <h4 style="margin-bottom: 0.5rem;">Advanced Analytics</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Full Greeks analysis, implied volatility, and risk metrics
+                            </p>
+                        </div>
+                        <div class="feature">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;"><¯</div>
+                            <h4 style="margin-bottom: 0.5rem;">Smart Filtering</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Filter by Delta, IV, volume, and custom criteria
+                            </p>
+                        </div>
+                        <div class="feature">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">=ñ</div>
+                            <h4 style="margin-bottom: 0.5rem;">Mobile First</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;">
+                                Responsive design optimized for mobile trading
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation Tabs (Mobile) -->
+    <nav class="nav-tabs d-block" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;" id="mobileNav">
+        <button class="nav-tab active" data-tab="options">Options</button>
+        <button class="nav-tab" data-tab="watchlist">Watchlist</button>
+        <button class="nav-tab" data-tab="portfolio">Portfolio</button>
+        <button class="nav-tab" data-tab="account">Account</button>
+    </nav>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title">Getting Started</h3>
+                <button class="modal-close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>Navigation Guide</h4>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li><strong>Mobile Beginner:</strong> Card-based view with simple explanations</li>
+                    <li><strong>Mobile Advanced:</strong> Compact table with essential data</li>
+                    <li><strong>Desktop:</strong> Full option chain with complete Greeks</li>
+                    <li><strong>Filters:</strong> Advanced filtering and sorting tools</li>
+                    <li><strong>Bulk Orders:</strong> Multi-option selection and strategies</li>
+                </ul>
+                
+                <h4>Interactions</h4>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li><strong>Mobile:</strong> Swipe left on cards for quick actions</li>
+                    <li><strong>Desktop:</strong> Right-click for context menus</li>
+                    <li><strong>Keyboard:</strong> B=Buy, S=Sell, F=Filter</li>
+                </ul>
+
+                <h4>Data</h4>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--gray-600);">
+                    This is a prototype with simulated real-time data for demonstration purposes.
+                    All prices and Greeks are for educational use only.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

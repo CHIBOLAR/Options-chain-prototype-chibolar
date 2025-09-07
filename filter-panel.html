@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Filters - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <div class="header-actions d-flex gap-sm">
+                    <button class="btn btn-outline-primary btn-sm" onclick="resetAllFilters()">Reset All</button>
+                    <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="saveFilterPreset()">Save Preset</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 1.5rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-2">
+                <div>
+                    <h1 style="font-size: 1.75rem; margin: 0; font-weight: 700;">AAPL Advanced Filters</h1>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Refine your option chain with precision filtering</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 1.5rem; font-weight: 600;">$150.25</div>
+                    <div style="font-size: 0.875rem; opacity: 0.9;">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div class="filter-stats" style="font-size: 0.875rem; opacity: 0.9;">
+                Showing <span id="filteredCount">156</span> of <span id="totalCount">324</span> options
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <!-- Filter Presets -->
+        <section class="filter-presets mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.125rem; margin: 0;">Quick Filter Presets</h2>
+                </div>
+                <div class="card-body">
+                    <div class="preset-buttons d-flex gap-sm" style="flex-wrap: wrap;">
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('high_volume')">High Volume (>1K)</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('near_money')">Near Money (±2%)</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('high_iv')">High IV (>30%)</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('liquid_options')">Liquid Options</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('weekly_expiry')">Weekly Expiry</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('deep_itm')">Deep ITM</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="applyPreset('covered_calls')">Covered Calls</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Filter Panel -->
+        <section class="main-filters mb-3">
+            <div class="card">
+                <div class="card-header d-flex justify-between align-center">
+                    <h2 style="font-size: 1.125rem; margin: 0;">Filter Criteria</h2>
+                    <div class="filter-toggle">
+                        <button class="btn btn-outline-primary btn-sm" id="toggleAdvanced" onclick="toggleAdvancedFilters()">
+                            Show Advanced
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Filters -->
+                    <div class="basic-filters">
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label class="form-label">Option Type</label>
+                                <select class="form-control form-select" id="optionTypeFilter" onchange="updateResults()">
+                                    <option value="all">Calls & Puts</option>
+                                    <option value="calls">Calls Only</option>
+                                    <option value="puts">Puts Only</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Expiration Date</label>
+                                <select class="form-control form-select" id="expirationFilter" onchange="updateResults()">
+                                    <option value="all">All Expiration Dates</option>
+                                    <option value="2025-09-14">Sep 14, 2025 (7 days)</option>
+                                    <option value="2025-09-21">Sep 21, 2025 (14 days)</option>
+                                    <option value="2025-10-19">Oct 19, 2025 (6 weeks)</option>
+                                    <option value="2025-12-19">Dec 19, 2025 (3 months)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Moneyness</label>
+                                <select class="form-control form-select" id="moneynessFilter" onchange="updateResults()">
+                                    <option value="all">All Options</option>
+                                    <option value="itm">In-The-Money</option>
+                                    <option value="atm">At-The-Money</option>
+                                    <option value="otm">Out-of-The-Money</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label class="form-label">Strike Price Range</label>
+                                <div class="range-slider">
+                                    <input type="range" id="strikeMin" min="140" max="160" value="145" oninput="updateStrikeRange()">
+                                    <input type="range" id="strikeMax" min="140" max="160" value="155" oninput="updateStrikeRange()">
+                                    <div class="range-values">
+                                        <span>$<span id="strikeMinValue">145</span></span>
+                                        <span>Strike Range</span>
+                                        <span>$<span id="strikeMaxValue">155</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Volume Threshold</label>
+                                <div class="range-slider">
+                                    <input type="range" id="volumeThreshold" min="0" max="5000" value="100" step="50" oninput="updateVolumeThreshold()">
+                                    <div class="range-values">
+                                        <span>0</span>
+                                        <span>Min Volume: <span id="volumeValue">100</span></span>
+                                        <span>5K+</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Open Interest</label>
+                                <div class="range-slider">
+                                    <input type="range" id="openInterestThreshold" min="0" max="50000" value="1000" step="500" oninput="updateOpenInterest()">
+                                    <div class="range-values">
+                                        <span>0</span>
+                                        <span>Min OI: <span id="oiValue">1K</span></span>
+                                        <span>50K+</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="advanced-filters d-none" id="advancedFiltersSection">
+                        <hr style="margin: 2rem 0;">
+                        <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--gray-700);">Advanced Greeks & Metrics</h3>
+                        
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label class="form-label">Delta Range</label>
+                                <div class="range-slider">
+                                    <input type="range" id="deltaMin" min="-1" max="1" value="-1" step="0.01" oninput="updateDeltaRange()">
+                                    <input type="range" id="deltaMax" min="-1" max="1" value="1" step="0.01" oninput="updateDeltaRange()">
+                                    <div class="range-values">
+                                        <span id="deltaMinValue">-1.00</span>
+                                        <span>Delta Range</span>
+                                        <span id="deltaMaxValue">1.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Gamma Range</label>
+                                <div class="range-slider">
+                                    <input type="range" id="gammaMin" min="0" max="0.5" value="0" step="0.01" oninput="updateGammaRange()">
+                                    <input type="range" id="gammaMax" min="0" max="0.5" value="0.5" step="0.01" oninput="updateGammaRange()">
+                                    <div class="range-values">
+                                        <span id="gammaMinValue">0.00</span>
+                                        <span>Gamma Range</span>
+                                        <span id="gammaMaxValue">0.50</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Theta Range (Daily Decay)</label>
+                                <div class="range-slider">
+                                    <input type="range" id="thetaMin" min="-1" max="0" value="-1" step="0.01" oninput="updateThetaRange()">
+                                    <input type="range" id="thetaMax" min="-1" max="0" value="0" step="0.01" oninput="updateThetaRange()">
+                                    <div class="range-values">
+                                        <span id="thetaMinValue">-1.00</span>
+                                        <span>Theta Range</span>
+                                        <span id="thetaMaxValue">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label class="form-label">Vega Range (IV Sensitivity)</label>
+                                <div class="range-slider">
+                                    <input type="range" id="vegaMin" min="0" max="1" value="0" step="0.01" oninput="updateVegaRange()">
+                                    <input type="range" id="vegaMax" min="0" max="1" value="1" step="0.01" oninput="updateVegaRange()">
+                                    <div class="range-values">
+                                        <span id="vegaMinValue">0.00</span>
+                                        <span>Vega Range</span>
+                                        <span id="vegaMaxValue">1.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Implied Volatility (%)</label>
+                                <div class="range-slider">
+                                    <input type="range" id="ivMin" min="0" max="100" value="0" step="1" oninput="updateIVRange()">
+                                    <input type="range" id="ivMax" min="0" max="100" value="100" step="1" oninput="updateIVRange()">
+                                    <div class="range-values">
+                                        <span id="ivMinValue">0%</span>
+                                        <span>IV Range</span>
+                                        <span id="ivMaxValue">100%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Bid-Ask Spread</label>
+                                <div class="range-slider">
+                                    <input type="range" id="spreadMax" min="0" max="2" value="2" step="0.05" oninput="updateSpreadRange()">
+                                    <div class="range-values">
+                                        <span>$0.00</span>
+                                        <span>Max Spread: $<span id="spreadValue">2.00</span></span>
+                                        <span>$2.00+</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label class="form-label">Days to Expiration</label>
+                                <div class="range-slider">
+                                    <input type="range" id="dteMin" min="1" max="365" value="1" oninput="updateDTERange()">
+                                    <input type="range" id="dteMax" min="1" max="365" value="365" oninput="updateDTERange()">
+                                    <div class="range-values">
+                                        <span id="dteMinValue">1</span>
+                                        <span>DTE Range</span>
+                                        <span id="dteMaxValue">365</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Last Price Range</label>
+                                <div class="range-slider">
+                                    <input type="range" id="priceMin" min="0" max="20" value="0" step="0.25" oninput="updatePriceRange()">
+                                    <input type="range" id="priceMax" min="0" max="20" value="20" step="0.25" oninput="updatePriceRange()">
+                                    <div class="range-values">
+                                        <span>$<span id="priceMinValue">0.00</span></span>
+                                        <span>Price Range</span>
+                                        <span>$<span id="priceMaxValue">20.00</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Special Filters</label>
+                                <div class="special-filters">
+                                    <label class="d-flex align-center gap-sm mb-2">
+                                        <input type="checkbox" id="liquidOnly" onchange="updateResults()">
+                                        <span>Liquid Options Only (Vol > 100, OI > 500)</span>
+                                    </label>
+                                    <label class="d-flex align-center gap-sm mb-2">
+                                        <input type="checkbox" id="unusualVolume" onchange="updateResults()">
+                                        <span>Unusual Volume (>150% avg)</span>
+                                    </label>
+                                    <label class="d-flex align-center gap-sm">
+                                        <input type="checkbox" id="earnings" onchange="updateResults()">
+                                        <span>Earnings Plays (High IV)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filter Results Preview -->
+        <section class="filter-results">
+            <div class="card">
+                <div class="card-header d-flex justify-between align-center">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Filtered Results</h3>
+                    <div class="result-actions">
+                        <select class="form-control form-select" id="sortBy" onchange="updateResults()" style="width: auto; margin-right: 1rem;">
+                            <option value="volume">Sort by Volume</option>
+                            <option value="iv">Sort by IV</option>
+                            <option value="delta">Sort by Delta</option>
+                            <option value="price">Sort by Price</option>
+                            <option value="oi">Sort by Open Interest</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="viewFullChain()">View Full Chain</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="results-summary mb-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;">
+                        <div class="metric">
+                            <div class="metric-value fw-bold text-primary" id="totalOptionsCount">156</div>
+                            <div class="metric-label">Total Options</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value fw-bold text-success" id="callsCount">78</div>
+                            <div class="metric-label">Calls</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value fw-bold text-danger" id="putsCount">78</div>
+                            <div class="metric-label">Puts</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value fw-bold text-warning" id="avgIV">28.5%</div>
+                            <div class="metric-label">Avg IV</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value fw-bold" id="totalVolume">45.2K</div>
+                            <div class="metric-label">Total Volume</div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-preview">
+                        <div class="table-container">
+                            <table class="table" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Strike</th>
+                                        <th>Expiry</th>
+                                        <th>Last</th>
+                                        <th>Volume</th>
+                                        <th>IV</th>
+                                        <th>Delta</th>
+                                        <th>Gamma</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <!-- Sample filtered results -->
+                                    <tr>
+                                        <td><span class="option-type call">C</span></td>
+                                        <td>150</td>
+                                        <td>Sep 21</td>
+                                        <td>$3.25</td>
+                                        <td class="high-volume">2.9K</td>
+                                        <td>28.2%</td>
+                                        <td>0.52</td>
+                                        <td>0.12</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="option-type put">P</span></td>
+                                        <td>150</td>
+                                        <td>Sep 21</td>
+                                        <td>$3.65</td>
+                                        <td class="high-volume">1.5K</td>
+                                        <td>28.7%</td>
+                                        <td>-0.48</td>
+                                        <td>0.12</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="option-type call">C</span></td>
+                                        <td>145</td>
+                                        <td>Sep 21</td>
+                                        <td>$6.75</td>
+                                        <td class="high-volume">1.2K</td>
+                                        <td>24.5%</td>
+                                        <td>0.67</td>
+                                        <td>0.08</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="results-pagination mt-3 d-flex justify-between align-center">
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                Showing 1-10 of 156 results
+                            </div>
+                            <div class="pagination-controls d-flex gap-sm">
+                                <button class="btn btn-outline-primary btn-sm" disabled>← Previous</button>
+                                <button class="btn btn-outline-primary btn-sm">Next →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Saved Filter Presets -->
+        <section class="saved-presets mt-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Saved Filter Presets</h3>
+                </div>
+                <div class="card-body">
+                    <div class="presets-list" id="presetsList">
+                        <div class="preset-item d-flex justify-between align-center mb-2" style="padding: 0.75rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius);">
+                            <div>
+                                <div class="fw-semibold">High Volume Calls</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Volume > 1K, Calls only, All expiries</div>
+                            </div>
+                            <div class="d-flex gap-sm">
+                                <button class="btn btn-outline-primary btn-sm" onclick="loadPreset('high_volume_calls')">Load</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deletePreset('high_volume_calls')">Delete</button>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-item d-flex justify-between align-center mb-2" style="padding: 0.75rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius);">
+                            <div>
+                                <div class="fw-semibold">Weekly Scalps</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">DTE < 7, High IV, Liquid only</div>
+                            </div>
+                            <div class="d-flex gap-sm">
+                                <button class="btn btn-outline-primary btn-sm" onclick="loadPreset('weekly_scalps')">Load</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deletePreset('weekly_scalps')">Delete</button>
+                            </div>
+                        </div>
+                        
+                        <div class="add-preset" style="padding: 0.75rem; border: 2px dashed var(--gray-300); border-radius: var(--border-radius); text-align: center; cursor: pointer;" onclick="saveCurrentAsPreset()">
+                            <div style="color: var(--gray-600);">+ Save Current Filters as New Preset</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Filter state management
+        let filters = {
+            basic: {
+                optionType: 'all',
+                expiration: 'all',
+                moneyness: 'all',
+                strikeMin: 145,
+                strikeMax: 155,
+                volumeThreshold: 100,
+                openInterestThreshold: 1000
+            },
+            advanced: {
+                deltaMin: -1,
+                deltaMax: 1,
+                gammaMin: 0,
+                gammaMax: 0.5,
+                thetaMin: -1,
+                thetaMax: 0,
+                vegaMin: 0,
+                vegaMax: 1,
+                ivMin: 0,
+                ivMax: 100,
+                spreadMax: 2,
+                dteMin: 1,
+                dteMax: 365,
+                priceMin: 0,
+                priceMax: 20,
+                liquidOnly: false,
+                unusualVolume: false,
+                earnings: false
+            }
+        };
+
+        // Sample option data for filtering simulation
+        let optionData = [
+            { type: 'call', strike: 145, expiry: '2025-09-21', last: 6.75, volume: 1247, iv: 24.5, delta: 0.67, gamma: 0.08, theta: -0.12, vega: 0.25, oi: 15200 },
+            { type: 'call', strike: 150, expiry: '2025-09-21', last: 3.25, volume: 2891, iv: 28.2, delta: 0.52, gamma: 0.12, theta: -0.18, vega: 0.31, oi: 22800 },
+            { type: 'call', strike: 155, expiry: '2025-09-21', last: 1.45, volume: 756, iv: 31.8, delta: 0.31, gamma: 0.09, theta: -0.14, vega: 0.22, oi: 8900 },
+            { type: 'put', strike: 145, expiry: '2025-09-21', last: 1.85, volume: 934, iv: 25.3, delta: -0.33, gamma: 0.09, theta: -0.13, vega: 0.21, oi: 7800 },
+            { type: 'put', strike: 150, expiry: '2025-09-21', last: 3.65, volume: 1523, iv: 28.7, delta: -0.48, gamma: 0.12, theta: -0.17, vega: 0.30, oi: 19400 },
+            { type: 'put', strike: 155, expiry: '2025-09-21', last: 6.95, volume: 678, iv: 32.1, delta: -0.69, gamma: 0.08, theta: -0.11, vega: 0.24, oi: 12100 }
+        ];
+
+        function toggleAdvancedFilters() {
+            const section = document.getElementById('advancedFiltersSection');
+            const button = document.getElementById('toggleAdvanced');
+            
+            if (section.classList.contains('d-none')) {
+                section.classList.remove('d-none');
+                button.textContent = 'Hide Advanced';
+            } else {
+                section.classList.add('d-none');
+                button.textContent = 'Show Advanced';
+            }
+        }
+
+        // Range slider updates
+        function updateStrikeRange() {
+            const min = document.getElementById('strikeMin').value;
+            const max = document.getElementById('strikeMax').value;
+            document.getElementById('strikeMinValue').textContent = min;
+            document.getElementById('strikeMaxValue').textContent = max;
+            filters.basic.strikeMin = parseInt(min);
+            filters.basic.strikeMax = parseInt(max);
+            updateResults();
+        }
+
+        function updateVolumeThreshold() {
+            const value = document.getElementById('volumeThreshold').value;
+            document.getElementById('volumeValue').textContent = value;
+            filters.basic.volumeThreshold = parseInt(value);
+            updateResults();
+        }
+
+        function updateOpenInterest() {
+            const value = document.getElementById('openInterestThreshold').value;
+            const displayValue = value >= 1000 ? (value / 1000).toFixed(1) + 'K' : value;
+            document.getElementById('oiValue').textContent = displayValue;
+            filters.basic.openInterestThreshold = parseInt(value);
+            updateResults();
+        }
+
+        function updateDeltaRange() {
+            const min = parseFloat(document.getElementById('deltaMin').value);
+            const max = parseFloat(document.getElementById('deltaMax').value);
+            document.getElementById('deltaMinValue').textContent = min.toFixed(2);
+            document.getElementById('deltaMaxValue').textContent = max.toFixed(2);
+            filters.advanced.deltaMin = min;
+            filters.advanced.deltaMax = max;
+            updateResults();
+        }
+
+        function updateGammaRange() {
+            const min = parseFloat(document.getElementById('gammaMin').value);
+            const max = parseFloat(document.getElementById('gammaMax').value);
+            document.getElementById('gammaMinValue').textContent = min.toFixed(2);
+            document.getElementById('gammaMaxValue').textContent = max.toFixed(2);
+            filters.advanced.gammaMin = min;
+            filters.advanced.gammaMax = max;
+            updateResults();
+        }
+
+        function updateThetaRange() {
+            const min = parseFloat(document.getElementById('thetaMin').value);
+            const max = parseFloat(document.getElementById('thetaMax').value);
+            document.getElementById('thetaMinValue').textContent = min.toFixed(2);
+            document.getElementById('thetaMaxValue').textContent = max.toFixed(2);
+            filters.advanced.thetaMin = min;
+            filters.advanced.thetaMax = max;
+            updateResults();
+        }
+
+        function updateVegaRange() {
+            const min = parseFloat(document.getElementById('vegaMin').value);
+            const max = parseFloat(document.getElementById('vegaMax').value);
+            document.getElementById('vegaMinValue').textContent = min.toFixed(2);
+            document.getElementById('vegaMaxValue').textContent = max.toFixed(2);
+            filters.advanced.vegaMin = min;
+            filters.advanced.vegaMax = max;
+            updateResults();
+        }
+
+        function updateIVRange() {
+            const min = parseInt(document.getElementById('ivMin').value);
+            const max = parseInt(document.getElementById('ivMax').value);
+            document.getElementById('ivMinValue').textContent = min + '%';
+            document.getElementById('ivMaxValue').textContent = max + '%';
+            filters.advanced.ivMin = min;
+            filters.advanced.ivMax = max;
+            updateResults();
+        }
+
+        function updateSpreadRange() {
+            const value = parseFloat(document.getElementById('spreadMax').value);
+            document.getElementById('spreadValue').textContent = value.toFixed(2);
+            filters.advanced.spreadMax = value;
+            updateResults();
+        }
+
+        function updateDTERange() {
+            const min = parseInt(document.getElementById('dteMin').value);
+            const max = parseInt(document.getElementById('dteMax').value);
+            document.getElementById('dteMinValue').textContent = min;
+            document.getElementById('dteMaxValue').textContent = max;
+            filters.advanced.dteMin = min;
+            filters.advanced.dteMax = max;
+            updateResults();
+        }
+
+        function updatePriceRange() {
+            const min = parseFloat(document.getElementById('priceMin').value);
+            const max = parseFloat(document.getElementById('priceMax').value);
+            document.getElementById('priceMinValue').textContent = min.toFixed(2);
+            document.getElementById('priceMaxValue').textContent = max.toFixed(2);
+            filters.advanced.priceMin = min;
+            filters.advanced.priceMax = max;
+            updateResults();
+        }
+
+        // Filter application
+        function updateResults() {
+            // Update filter values from form elements
+            filters.basic.optionType = document.getElementById('optionTypeFilter').value;
+            filters.basic.expiration = document.getElementById('expirationFilter').value;
+            filters.basic.moneyness = document.getElementById('moneynessFilter').value;
+            filters.advanced.liquidOnly = document.getElementById('liquidOnly')?.checked || false;
+            filters.advanced.unusualVolume = document.getElementById('unusualVolume')?.checked || false;
+            filters.advanced.earnings = document.getElementById('earnings')?.checked || false;
+
+            // Apply filters to sample data
+            let filteredData = optionData.filter(option => {
+                // Basic filters
+                if (filters.basic.optionType !== 'all' && 
+                    ((filters.basic.optionType === 'calls' && option.type !== 'call') ||
+                     (filters.basic.optionType === 'puts' && option.type !== 'put'))) {
+                    return false;
+                }
+
+                if (option.strike < filters.basic.strikeMin || option.strike > filters.basic.strikeMax) {
+                    return false;
+                }
+
+                if (option.volume < filters.basic.volumeThreshold) {
+                    return false;
+                }
+
+                if (option.oi < filters.basic.openInterestThreshold) {
+                    return false;
+                }
+
+                // Advanced filters
+                if (option.delta < filters.advanced.deltaMin || option.delta > filters.advanced.deltaMax) {
+                    return false;
+                }
+
+                if (option.gamma < filters.advanced.gammaMin || option.gamma > filters.advanced.gammaMax) {
+                    return false;
+                }
+
+                if (option.theta < filters.advanced.thetaMin || option.theta > filters.advanced.thetaMax) {
+                    return false;
+                }
+
+                if (option.vega < filters.advanced.vegaMin || option.vega > filters.advanced.vegaMax) {
+                    return false;
+                }
+
+                if (option.iv < filters.advanced.ivMin || option.iv > filters.advanced.ivMax) {
+                    return false;
+                }
+
+                if (option.last < filters.advanced.priceMin || option.last > filters.advanced.priceMax) {
+                    return false;
+                }
+
+                // Special filters
+                if (filters.advanced.liquidOnly && (option.volume <= 100 || option.oi <= 500)) {
+                    return false;
+                }
+
+                if (filters.advanced.unusualVolume && option.volume < 1500) {
+                    return false;
+                }
+
+                if (filters.advanced.earnings && option.iv < 30) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Update summary statistics
+            updateSummaryStats(filteredData);
+            
+            // Update results table
+            updateResultsTable(filteredData);
+        }
+
+        function updateSummaryStats(data) {
+            const totalOptions = data.length;
+            const calls = data.filter(opt => opt.type === 'call').length;
+            const puts = data.filter(opt => opt.type === 'put').length;
+            const avgIV = data.length > 0 ? (data.reduce((sum, opt) => sum + opt.iv, 0) / data.length).toFixed(1) + '%' : '0%';
+            const totalVolume = data.reduce((sum, opt) => sum + opt.volume, 0);
+            const volumeDisplay = totalVolume >= 1000 ? (totalVolume / 1000).toFixed(1) + 'K' : totalVolume;
+
+            document.getElementById('totalOptionsCount').textContent = totalOptions;
+            document.getElementById('callsCount').textContent = calls;
+            document.getElementById('putsCount').textContent = puts;
+            document.getElementById('avgIV').textContent = avgIV;
+            document.getElementById('totalVolume').textContent = volumeDisplay;
+            document.getElementById('filteredCount').textContent = totalOptions;
+        }
+
+        function updateResultsTable(data) {
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+
+            data.slice(0, 10).forEach(option => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="option-type ${option.type}">${option.type === 'call' ? 'C' : 'P'}</span></td>
+                    <td>${option.strike}</td>
+                    <td>Sep 21</td>
+                    <td>$${option.last}</td>
+                    <td class="${option.volume > 1000 ? 'high-volume' : ''}">${option.volume >= 1000 ? (option.volume / 1000).toFixed(1) + 'K' : option.volume}</td>
+                    <td>${option.iv}%</td>
+                    <td>${option.delta}</td>
+                    <td>${option.gamma}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Preset management
+        function applyPreset(presetName) {
+            switch (presetName) {
+                case 'high_volume':
+                    document.getElementById('volumeThreshold').value = 1000;
+                    updateVolumeThreshold();
+                    break;
+                case 'near_money':
+                    document.getElementById('strikeMin').value = 147;
+                    document.getElementById('strikeMax').value = 153;
+                    updateStrikeRange();
+                    break;
+                case 'high_iv':
+                    document.getElementById('ivMin').value = 30;
+                    updateIVRange();
+                    break;
+                case 'liquid_options':
+                    document.getElementById('liquidOnly').checked = true;
+                    updateResults();
+                    break;
+                case 'weekly_expiry':
+                    document.getElementById('expirationFilter').value = '2025-09-14';
+                    updateResults();
+                    break;
+                case 'deep_itm':
+                    document.getElementById('moneynessFilter').value = 'itm';
+                    updateResults();
+                    break;
+                case 'covered_calls':
+                    document.getElementById('optionTypeFilter').value = 'calls';
+                    document.getElementById('deltaMin').value = 0.2;
+                    document.getElementById('deltaMax').value = 0.4;
+                    updateDeltaRange();
+                    updateResults();
+                    break;
+            }
+        }
+
+        function resetAllFilters() {
+            // Reset all form elements to default values
+            document.getElementById('optionTypeFilter').value = 'all';
+            document.getElementById('expirationFilter').value = 'all';
+            document.getElementById('moneynessFilter').value = 'all';
+            
+            document.getElementById('strikeMin').value = 145;
+            document.getElementById('strikeMax').value = 155;
+            document.getElementById('volumeThreshold').value = 100;
+            document.getElementById('openInterestThreshold').value = 1000;
+            
+            document.getElementById('deltaMin').value = -1;
+            document.getElementById('deltaMax').value = 1;
+            document.getElementById('gammaMin').value = 0;
+            document.getElementById('gammaMax').value = 0.5;
+            document.getElementById('thetaMin').value = -1;
+            document.getElementById('thetaMax').value = 0;
+            document.getElementById('vegaMin').value = 0;
+            document.getElementById('vegaMax').value = 1;
+            document.getElementById('ivMin').value = 0;
+            document.getElementById('ivMax').value = 100;
+            document.getElementById('spreadMax').value = 2;
+            document.getElementById('dteMin').value = 1;
+            document.getElementById('dteMax').value = 365;
+            document.getElementById('priceMin').value = 0;
+            document.getElementById('priceMax').value = 20;
+            
+            if (document.getElementById('liquidOnly')) document.getElementById('liquidOnly').checked = false;
+            if (document.getElementById('unusualVolume')) document.getElementById('unusualVolume').checked = false;
+            if (document.getElementById('earnings')) document.getElementById('earnings').checked = false;
+
+            // Update all displays
+            updateStrikeRange();
+            updateVolumeThreshold();
+            updateOpenInterest();
+            updateDeltaRange();
+            updateGammaRange();
+            updateThetaRange();
+            updateVegaRange();
+            updateIVRange();
+            updateSpreadRange();
+            updateDTERange();
+            updatePriceRange();
+            updateResults();
+        }
+
+        function applyFilters() {
+            updateResults();
+            alert('Filters applied! In a real application, this would update the main option chain view.');
+        }
+
+        function saveFilterPreset() {
+            const name = prompt('Enter a name for this filter preset:');
+            if (name) {
+                alert(`Filter preset "${name}" saved! This would be stored in user preferences.`);
+            }
+        }
+
+        function viewFullChain() {
+            window.location.href = 'desktop-table.html';
+        }
+
+        function saveCurrentAsPreset() {
+            const name = prompt('Enter a name for this filter preset:');
+            if (name) {
+                const presetsList = document.getElementById('presetsList');
+                const addPreset = presetsList.querySelector('.add-preset');
+                
+                const newPreset = document.createElement('div');
+                newPreset.className = 'preset-item d-flex justify-between align-center mb-2';
+                newPreset.style.cssText = 'padding: 0.75rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius);';
+                newPreset.innerHTML = `
+                    <div>
+                        <div class="fw-semibold">${name}</div>
+                        <div style="font-size: 0.875rem; color: var(--gray-600);">Custom filter configuration</div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadCustomPreset()">Load</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="this.closest('.preset-item').remove()">Delete</button>
+                    </div>
+                `;
+                
+                presetsList.insertBefore(newPreset, addPreset);
+            }
+        }
+
+        // Initialize filters
+        updateResults();
+    </script>
+</body>
+</html>

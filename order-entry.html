@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Entry Demo - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm" onclick="window.history.back()">← Back</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="text-center mb-3">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Order Entry Demonstration</h1>
+            <p style="color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+                Experience the complete order flow from selection to confirmation across all device types
+            </p>
+        </div>
+
+        <!-- Demo Options -->
+        <section class="demo-options mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Choose Order Type to Demo</h2>
+                </div>
+                <div class="card-body">
+                    <div class="order-demos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                        <!-- Simple Buy Call -->
+                        <div class="demo-option" onclick="demoSimpleBuy()" style="padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition-fast);">
+                            <h3 style="color: var(--success-color); margin-bottom: 0.5rem;">📈 Simple Buy Call</h3>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.5rem;">
+                                Basic call option purchase - bullish strategy
+                            </p>
+                            <div style="font-size: 0.75rem; color: var(--gray-500);">
+                                AAPL $150 Call • Sep 21 • Market Order
+                            </div>
+                        </div>
+
+                        <!-- Advanced Limit Order -->
+                        <div class="demo-option" onclick="demoLimitOrder()" style="padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition-fast);">
+                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">🎯 Limit Order</h3>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.5rem;">
+                                Precise price entry with limit order
+                            </p>
+                            <div style="font-size: 0.75rem; color: var(--gray-500);">
+                                AAPL $155 Put • Oct 19 • Limit $2.50
+                            </div>
+                        </div>
+
+                        <!-- Multi-Leg Strategy -->
+                        <div class="demo-option" onclick="demoStrategyOrder()" style="padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition-fast);">
+                            <h3 style="color: var(--warning-color); margin-bottom: 0.5rem;">🔗 Bull Call Spread</h3>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.5rem;">
+                                Multi-leg strategy order
+                            </p>
+                            <div style="font-size: 0.75rem; color: var(--gray-500);">
+                                Buy $145 Call / Sell $155 Call • Net Debit
+                            </div>
+                        </div>
+
+                        <!-- Risk Warning Order -->
+                        <div class="demo-option" onclick="demoRiskWarning()" style="padding: 1rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition-fast);">
+                            <h3 style="color: var(--danger-color); margin-bottom: 0.5rem;">⚠️ High-Risk Order</h3>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.5rem;">
+                                Order with risk warnings and confirmations
+                            </p>
+                            <div style="font-size: 0.75rem; color: var(--gray-500);">
+                                Near-expiry options • Risk management flow
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current Demo Display -->
+        <section class="current-demo" id="demoSection" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-between align-center">
+                    <h3 style="margin: 0;" id="demoTitle">Demo: Simple Buy Call</h3>
+                    <button class="btn btn-outline-primary btn-sm" onclick="resetDemo()">Reset Demo</button>
+                </div>
+                <div class="card-body">
+                    <div class="demo-steps" id="demoSteps">
+                        <!-- Steps will be populated by JavaScript -->
+                    </div>
+                    <div class="demo-action mt-3">
+                        <button class="btn btn-primary" id="nextStepBtn" onclick="nextStep()">Start Demo</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Order Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Place Order</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content populated by JavaScript -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Footer populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Order Confirmation</h3>
+                <button class="modal-close" onclick="closeConfirmation()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirmation-content" id="confirmationContent">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" onclick="closeConfirmation()">Close</button>
+                <button class="btn btn-success" onclick="viewPortfolio()">View Portfolio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Warning Modal -->
+    <div class="modal-overlay" id="riskModal">
+        <div class="modal">
+            <div class="modal-header" style="background-color: rgba(220, 53, 69, 0.1); border-bottom: 1px solid var(--danger-color);">
+                <h3 class="modal-title" style="color: var(--danger-color);">⚠️ Risk Warning</h3>
+                <button class="modal-close" onclick="closeRiskModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="risk-content" id="riskContent">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="risk-acknowledgment mt-3">
+                    <label class="d-flex align-center gap-sm">
+                        <input type="checkbox" id="riskAcknowledge">
+                        <span style="font-size: 0.875rem;">I understand and acknowledge these risks</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" onclick="closeRiskModal()">Cancel Order</button>
+                <button class="btn btn-danger" id="proceedRiskBtn" onclick="proceedWithRisk()" disabled>Proceed Anyway</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        let currentDemo = null;
+        let currentStep = 0;
+        let orderData = {};
+
+        const demos = {
+            simpleBuy: {
+                title: "Simple Buy Call",
+                steps: [
+                    "Select AAPL $150 Call option",
+                    "Choose quantity (1 contract)",
+                    "Select Market order type",
+                    "Review order details and risks",
+                    "Confirm and submit order",
+                    "Receive order confirmation"
+                ],
+                data: {
+                    symbol: "AAPL",
+                    strike: 150,
+                    type: "call",
+                    action: "buy",
+                    quantity: 1,
+                    orderType: "market",
+                    premium: 3.25
+                }
+            },
+            limitOrder: {
+                title: "Advanced Limit Order",
+                steps: [
+                    "Select AAPL $155 Put option",
+                    "Choose quantity (2 contracts)",
+                    "Select Limit order type",
+                    "Set limit price ($2.50)",
+                    "Review order with custom price",
+                    "Submit limit order",
+                    "Order placed in queue"
+                ],
+                data: {
+                    symbol: "AAPL",
+                    strike: 155,
+                    type: "put",
+                    action: "buy",
+                    quantity: 2,
+                    orderType: "limit",
+                    limitPrice: 2.50,
+                    premium: 2.65
+                }
+            },
+            strategy: {
+                title: "Bull Call Spread Strategy",
+                steps: [
+                    "Select Bull Call Spread strategy",
+                    "Buy AAPL $145 Call",
+                    "Sell AAPL $155 Call",
+                    "Review net debit calculation",
+                    "Analyze profit/loss scenarios",
+                    "Confirm multi-leg order",
+                    "Strategy order executed"
+                ],
+                data: {
+                    symbol: "AAPL",
+                    strategy: "bull_call_spread",
+                    legs: [
+                        { strike: 145, type: "call", action: "buy", premium: 6.75 },
+                        { strike: 155, type: "call", action: "sell", premium: 1.45 }
+                    ],
+                    netDebit: 5.30,
+                    quantity: 1
+                }
+            },
+            riskWarning: {
+                title: "High-Risk Order with Warnings",
+                steps: [
+                    "Select near-expiry option (3 days)",
+                    "System detects high-risk trade",
+                    "Display risk warning modal",
+                    "Acknowledge risk factors",
+                    "Proceed with caution",
+                    "Additional confirmation required",
+                    "Order submitted with alerts"
+                ],
+                data: {
+                    symbol: "AAPL",
+                    strike: 160,
+                    type: "call",
+                    action: "buy",
+                    quantity: 5,
+                    orderType: "market",
+                    premium: 0.25,
+                    expiry: "2025-09-10", // Very near expiry
+                    riskLevel: "high"
+                }
+            }
+        };
+
+        function demoSimpleBuy() {
+            startDemo('simpleBuy');
+        }
+
+        function demoLimitOrder() {
+            startDemo('limitOrder');
+        }
+
+        function demoStrategyOrder() {
+            startDemo('strategy');
+        }
+
+        function demoRiskWarning() {
+            startDemo('riskWarning');
+        }
+
+        function startDemo(demoType) {
+            currentDemo = demos[demoType];
+            currentStep = 0;
+            orderData = JSON.parse(JSON.stringify(currentDemo.data));
+            
+            document.getElementById('demoTitle').textContent = `Demo: ${currentDemo.title}`;
+            document.getElementById('demoSection').style.display = 'block';
+            
+            updateDemoDisplay();
+            
+            // Scroll to demo section
+            document.getElementById('demoSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateDemoDisplay() {
+            const stepsContainer = document.getElementById('demoSteps');
+            const nextBtn = document.getElementById('nextStepBtn');
+            
+            stepsContainer.innerHTML = '';
+            
+            currentDemo.steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'demo-step';
+                stepDiv.style.cssText = `
+                    padding: 1rem;
+                    margin-bottom: 0.5rem;
+                    border-radius: var(--border-radius);
+                    border-left: 4px solid ${index < currentStep ? 'var(--success-color)' : 
+                                                index === currentStep ? 'var(--primary-color)' : 'var(--gray-300)'};
+                    background-color: ${index < currentStep ? 'rgba(40, 167, 69, 0.1)' : 
+                                       index === currentStep ? 'rgba(0, 122, 255, 0.1)' : 'var(--gray-100)'};
+                `;
+                
+                stepDiv.innerHTML = `
+                    <div class="d-flex align-center gap-sm">
+                        <div class="step-number" style="
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 0.75rem;
+                            font-weight: 600;
+                            color: white;
+                            background-color: ${index < currentStep ? 'var(--success-color)' : 
+                                               index === currentStep ? 'var(--primary-color)' : 'var(--gray-400)'};
+                        ">
+                            ${index < currentStep ? '✓' : index + 1}
+                        </div>
+                        <div class="step-text" style="font-weight: ${index === currentStep ? '600' : '400'};">
+                            ${step}
+                        </div>
+                    </div>
+                `;
+                
+                stepsContainer.appendChild(stepDiv);
+            });
+            
+            if (currentStep >= currentDemo.steps.length) {
+                nextBtn.textContent = 'Demo Complete';
+                nextBtn.disabled = true;
+                nextBtn.classList.add('btn-success');
+                nextBtn.classList.remove('btn-primary');
+            } else {
+                nextBtn.textContent = currentStep === 0 ? 'Start Demo' : 'Next Step';
+                nextBtn.disabled = false;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep >= currentDemo.steps.length) return;
+            
+            // Execute step-specific actions
+            switch (currentStep) {
+                case 0:
+                    // Step 1: Show option selection
+                    if (currentDemo === demos.strategy) {
+                        showStrategySelection();
+                    } else {
+                        showOptionSelection();
+                    }
+                    break;
+                case 1:
+                    // Step 2: Show quantity selection
+                    showQuantitySelection();
+                    break;
+                case 2:
+                    // Step 3: Show order type
+                    showOrderTypeSelection();
+                    break;
+                case 3:
+                    // Step 4: Show review
+                    if (currentDemo === demos.riskWarning) {
+                        showRiskWarning();
+                    } else {
+                        showOrderReview();
+                    }
+                    break;
+                case 4:
+                    // Step 5: Confirmation
+                    if (currentDemo === demos.riskWarning) {
+                        acknowledgeRisk();
+                    } else {
+                        showConfirmation();
+                    }
+                    break;
+                case 5:
+                    // Step 6: Final confirmation
+                    if (currentDemo === demos.riskWarning) {
+                        showFinalConfirmation();
+                    } else {
+                        completeOrder();
+                    }
+                    break;
+                case 6:
+                    // Step 7: Complete
+                    completeOrder();
+                    break;
+            }
+            
+            currentStep++;
+            updateDemoDisplay();
+        }
+
+        function showOptionSelection() {
+            const modal = document.getElementById('orderModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const footer = document.getElementById('modalFooter');
+            
+            title.textContent = 'Select Option';
+            body.innerHTML = `
+                <div class="option-selection">
+                    <div class="selected-option" style="padding: 1rem; background-color: rgba(0, 122, 255, 0.1); border-radius: var(--border-radius); margin-bottom: 1rem;">
+                        <div class="d-flex justify-between align-center">
+                            <div>
+                                <div class="fw-bold">${orderData.symbol} $${orderData.strike} ${orderData.type.toUpperCase()}</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Expires: Sep 21, 2025</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="fw-bold text-primary">$${orderData.premium}</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Premium</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                        This option is ${orderData.type === 'call' ? 'bullish' : 'bearish'} and 
+                        ${orderData.strike > 150 ? 'out-of-the-money' : orderData.strike < 150 ? 'in-the-money' : 'at-the-money'}.
+                    </div>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="closeModal()">Back</button>
+                <button class="btn btn-primary" onclick="closeModal(); setTimeout(nextStep, 500);">Continue</button>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function showQuantitySelection() {
+            const modal = document.getElementById('orderModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const footer = document.getElementById('modalFooter');
+            
+            title.textContent = 'Select Quantity';
+            body.innerHTML = `
+                <div class="quantity-selection">
+                    <div class="form-group">
+                        <label class="form-label">Number of Contracts</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="quantity-btn" onclick="adjustDemoQuantity(-1)">-</button>
+                            <input type="number" class="form-control quantity-input" id="demoQuantity" value="${orderData.quantity}" min="1" max="100">
+                            <button type="button" class="quantity-btn" onclick="adjustDemoQuantity(1)">+</button>
+                        </div>
+                    </div>
+                    <div class="cost-calculation mt-3" style="background-color: var(--gray-100); padding: 1rem; border-radius: var(--border-radius);">
+                        <div class="d-flex justify-between">
+                            <span>Cost per Contract:</span>
+                            <span class="fw-bold">$${(orderData.premium * 100).toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-between">
+                            <span>Total Cost:</span>
+                            <span class="fw-bold text-primary" id="totalCostDisplay">$${(orderData.quantity * orderData.premium * 100).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="closeModal()">Back</button>
+                <button class="btn btn-primary" onclick="closeModal(); setTimeout(nextStep, 500);">Continue</button>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function showOrderTypeSelection() {
+            const modal = document.getElementById('orderModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const footer = document.getElementById('modalFooter');
+            
+            title.textContent = 'Select Order Type';
+            body.innerHTML = `
+                <div class="order-type-selection">
+                    <div class="form-group">
+                        <label class="form-label">Order Type</label>
+                        <select class="form-control form-select" id="demoOrderType" onchange="updateOrderTypeDemo()">
+                            <option value="market" ${orderData.orderType === 'market' ? 'selected' : ''}>Market Order - Execute Immediately</option>
+                            <option value="limit" ${orderData.orderType === 'limit' ? 'selected' : ''}>Limit Order - Set Custom Price</option>
+                        </select>
+                    </div>
+                    <div class="limit-price-group ${orderData.orderType === 'market' ? 'd-none' : ''}" id="limitPriceGroup">
+                        <label class="form-label">Limit Price</label>
+                        <div class="d-flex gap-sm align-center">
+                            <input type="number" class="form-control" id="demoLimitPrice" value="${orderData.limitPrice || orderData.premium}" step="0.01">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setMidPriceDemo()">Mid</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setBidPriceDemo()">Bid</button>
+                        </div>
+                    </div>
+                    <div class="order-explanation mt-3" style="font-size: 0.875rem; color: var(--gray-600);" id="orderExplanation">
+                        ${orderData.orderType === 'market' ? 
+                            'Market orders execute immediately at the current market price.' : 
+                            'Limit orders only execute if the market price reaches your specified price.'}
+                    </div>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="closeModal()">Back</button>
+                <button class="btn btn-primary" onclick="closeModal(); setTimeout(nextStep, 500);">Continue</button>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function showOrderReview() {
+            const modal = document.getElementById('orderModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const footer = document.getElementById('modalFooter');
+            
+            title.textContent = 'Review Your Order';
+            
+            const totalCost = orderData.quantity * (orderData.limitPrice || orderData.premium) * 100;
+            
+            body.innerHTML = `
+                <div class="order-review">
+                    <div class="order-summary" style="background-color: var(--gray-100); padding: 1rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                        <div class="d-flex justify-between mb-2">
+                            <span>Action:</span>
+                            <span class="fw-bold">${orderData.action.toUpperCase()} TO OPEN</span>
+                        </div>
+                        <div class="d-flex justify-between mb-2">
+                            <span>Option:</span>
+                            <span class="fw-bold">${orderData.symbol} $${orderData.strike} ${orderData.type.toUpperCase()}</span>
+                        </div>
+                        <div class="d-flex justify-between mb-2">
+                            <span>Quantity:</span>
+                            <span class="fw-bold">${orderData.quantity} contracts</span>
+                        </div>
+                        <div class="d-flex justify-between mb-2">
+                            <span>Order Type:</span>
+                            <span class="fw-bold">${orderData.orderType.toUpperCase()}${orderData.orderType === 'limit' ? ' @ $' + orderData.limitPrice : ''}</span>
+                        </div>
+                        <div class="d-flex justify-between">
+                            <span>Estimated Cost:</span>
+                            <span class="fw-bold text-primary">$${totalCost.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="risk-metrics" style="background-color: var(--light-color); padding: 1rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                        <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Risk Metrics</h4>
+                        <div class="d-flex justify-between mb-1">
+                            <span>Maximum Loss:</span>
+                            <span class="fw-bold text-danger">$${totalCost.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-between mb-1">
+                            <span>Breakeven Price:</span>
+                            <span class="fw-bold">${orderData.type === 'call' ? '$' + (orderData.strike + orderData.premium).toFixed(2) : '$' + (orderData.strike - orderData.premium).toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-between">
+                            <span>Time to Expiry:</span>
+                            <span class="fw-bold">14 days</span>
+                        </div>
+                    </div>
+                    
+                    <div class="account-impact" style="font-size: 0.875rem; color: var(--gray-600);">
+                        <div class="d-flex justify-between">
+                            <span>Available Cash:</span>
+                            <span>$25,000.00</span>
+                        </div>
+                        <div class="d-flex justify-between">
+                            <span>After Order:</span>
+                            <span class="text-success">$${(25000 - totalCost).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="closeModal()">Modify Order</button>
+                <button class="btn btn-primary" onclick="closeModal(); setTimeout(nextStep, 500);">Confirm Order</button>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function showRiskWarning() {
+            const modal = document.getElementById('riskModal');
+            const content = document.getElementById('riskContent');
+            
+            content.innerHTML = `
+                <div class="risk-factors">
+                    <div class="risk-factor mb-3">
+                        <div class="fw-bold text-danger mb-1">⚠️ Near Expiration (3 days)</div>
+                        <div style="font-size: 0.875rem;">This option expires in 3 days and may lose value rapidly due to time decay.</div>
+                    </div>
+                    <div class="risk-factor mb-3">
+                        <div class="fw-bold text-danger mb-1">📉 Out-of-the-Money</div>
+                        <div style="font-size: 0.875rem;">This option is significantly out-of-the-money and has a low probability of profit.</div>
+                    </div>
+                    <div class="risk-factor mb-3">
+                        <div class="fw-bold text-danger mb-1">💸 High Premium Cost</div>
+                        <div style="font-size: 0.875rem;">You're paying a high premium relative to intrinsic value (5 contracts × $25 = $1,250 total risk).</div>
+                    </div>
+                    <div class="risk-factor">
+                        <div class="fw-bold text-danger mb-1">⚡ High Volatility</div>
+                        <div style="font-size: 0.875rem;">Current implied volatility is elevated, making options more expensive.</div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Enable proceed button when checkbox is checked
+            document.getElementById('riskAcknowledge').addEventListener('change', function() {
+                document.getElementById('proceedRiskBtn').disabled = !this.checked;
+            });
+        }
+
+        function showConfirmation() {
+            const modal = document.getElementById('confirmationModal');
+            const content = document.getElementById('confirmationContent');
+            
+            const totalCost = orderData.quantity * (orderData.limitPrice || orderData.premium) * 100;
+            const orderId = 'OPT' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            
+            content.innerHTML = `
+                <div class="confirmation-success text-center mb-3">
+                    <div style="font-size: 3rem; color: var(--success-color); margin-bottom: 1rem;">✅</div>
+                    <h3 style="color: var(--success-color); margin-bottom: 0.5rem;">Order Submitted Successfully!</h3>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">Order ID: ${orderId}</div>
+                </div>
+                
+                <div class="order-details" style="background-color: var(--gray-100); padding: 1rem; border-radius: var(--border-radius);">
+                    <div class="d-flex justify-between mb-2">
+                        <span>Option:</span>
+                        <span class="fw-bold">${orderData.symbol} $${orderData.strike} ${orderData.type.toUpperCase()}</span>
+                    </div>
+                    <div class="d-flex justify-between mb-2">
+                        <span>Action:</span>
+                        <span class="fw-bold">${orderData.action.toUpperCase()} TO OPEN</span>
+                    </div>
+                    <div class="d-flex justify-between mb-2">
+                        <span>Quantity:</span>
+                        <span class="fw-bold">${orderData.quantity} contracts</span>
+                    </div>
+                    <div class="d-flex justify-between mb-2">
+                        <span>Order Type:</span>
+                        <span class="fw-bold">${orderData.orderType.toUpperCase()}</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Status:</span>
+                        <span class="fw-bold text-success">${orderData.orderType === 'market' ? 'FILLED' : 'PENDING'}</span>
+                    </div>
+                </div>
+                
+                ${orderData.orderType === 'market' ? `
+                <div class="fill-details mt-3" style="background-color: rgba(40, 167, 69, 0.1); padding: 1rem; border-radius: var(--border-radius);">
+                    <div class="d-flex justify-between mb-1">
+                        <span>Fill Price:</span>
+                        <span class="fw-bold">$${orderData.premium}</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Total Cost:</span>
+                        <span class="fw-bold text-success">$${totalCost.toFixed(2)}</span>
+                    </div>
+                </div>
+                ` : `
+                <div class="pending-details mt-3" style="background-color: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: var(--border-radius);">
+                    <div class="text-center">
+                        <div class="fw-bold text-warning">Order Pending</div>
+                        <div style="font-size: 0.875rem;">Your limit order is queued and will execute when market price reaches $${orderData.limitPrice}</div>
+                    </div>
+                </div>
+                `}
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function acknowledgeRisk() {
+            closeRiskModal();
+            setTimeout(() => {
+                showConfirmation();
+                nextStep();
+            }, 500);
+        }
+
+        function proceedWithRisk() {
+            closeRiskModal();
+        }
+
+        function showFinalConfirmation() {
+            setTimeout(() => {
+                showConfirmation();
+            }, 1000);
+        }
+
+        function completeOrder() {
+            // Demo complete
+            setTimeout(() => {
+                if (document.getElementById('confirmationModal').classList.contains('show')) {
+                    return; // Already showing confirmation
+                }
+                showConfirmation();
+            }, 500);
+        }
+
+        // Helper functions
+        function adjustDemoQuantity(change) {
+            const input = document.getElementById('demoQuantity');
+            const currentValue = parseInt(input.value) || 1;
+            const newValue = Math.max(1, Math.min(100, currentValue + change));
+            input.value = newValue;
+            orderData.quantity = newValue;
+            
+            // Update cost display
+            const totalCost = newValue * orderData.premium * 100;
+            const totalCostDisplay = document.getElementById('totalCostDisplay');
+            if (totalCostDisplay) {
+                totalCostDisplay.textContent = `$${totalCost.toFixed(2)}`;
+            }
+        }
+
+        function updateOrderTypeDemo() {
+            const orderType = document.getElementById('demoOrderType').value;
+            orderData.orderType = orderType;
+            
+            const limitGroup = document.getElementById('limitPriceGroup');
+            const explanation = document.getElementById('orderExplanation');
+            
+            if (orderType === 'limit') {
+                limitGroup.classList.remove('d-none');
+                explanation.textContent = 'Limit orders only execute if the market price reaches your specified price.';
+            } else {
+                limitGroup.classList.add('d-none');
+                explanation.textContent = 'Market orders execute immediately at the current market price.';
+            }
+        }
+
+        function setMidPriceDemo() {
+            const bidPrice = orderData.premium - 0.05;
+            const askPrice = orderData.premium + 0.05;
+            const midPrice = ((bidPrice + askPrice) / 2).toFixed(2);
+            document.getElementById('demoLimitPrice').value = midPrice;
+            orderData.limitPrice = parseFloat(midPrice);
+        }
+
+        function setBidPriceDemo() {
+            const bidPrice = (orderData.premium - 0.05).toFixed(2);
+            document.getElementById('demoLimitPrice').value = bidPrice;
+            orderData.limitPrice = parseFloat(bidPrice);
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').classList.remove('show');
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmationModal').classList.remove('show');
+        }
+
+        function closeRiskModal() {
+            document.getElementById('riskModal').classList.remove('show');
+        }
+
+        function resetDemo() {
+            currentDemo = null;
+            currentStep = 0;
+            orderData = {};
+            document.getElementById('demoSection').style.display = 'none';
+            
+            // Close any open modals
+            closeModal();
+            closeConfirmation();
+            closeRiskModal();
+        }
+
+        function viewPortfolio() {
+            alert('This would navigate to your portfolio page showing the new position');
+            closeConfirmation();
+        }
+
+        // Add hover effects to demo options
+        document.querySelectorAll('.demo-option').forEach(option => {
+            option.addEventListener('mouseenter', function() {
+                this.style.borderColor = 'var(--primary-color)';
+                this.style.boxShadow = 'var(--shadow-md)';
+            });
+            
+            option.addEventListener('mouseleave', function() {
+                this.style.borderColor = 'var(--gray-200)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

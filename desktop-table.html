@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAPL Options Chain - Desktop - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks (AAPL, TSLA, MSFT...)" id="stockSearch" autocomplete="off">
+                </div>
+                <div class="header-actions d-flex gap-sm">
+                    <button class="btn btn-outline-primary btn-sm" onclick="showFilterPanel()">Filters</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="showBulkPanel()">Bulk Orders</button>
+                    <button class="btn btn-outline-primary btn-sm" id="helpBtn">Help</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 2rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-3">
+                <div>
+                    <h1 style="font-size: 2rem; margin: 0; font-weight: 700;" id="stockSymbol">AAPL</h1>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1.125rem;" id="companyName">Apple Inc.</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 2rem; font-weight: 600;" id="stockPrice">$150.25</div>
+                    <div style="font-size: 1rem; opacity: 0.9;" id="stockChange">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div class="d-flex justify-between align-center" style="font-size: 0.95rem; opacity: 0.9;">
+                <div class="d-flex gap-xl">
+                    <div>Open: <span class="fw-semibold">$148.50</span></div>
+                    <div>High: <span class="fw-semibold">$151.20</span></div>
+                    <div>Low: <span class="fw-semibold">$147.80</span></div>
+                    <div>Volume: <span class="fw-semibold">45.2M</span></div>
+                </div>
+                <div class="d-flex gap-xl">
+                    <div>IV Rank: <span class="fw-semibold">32%</span></div>
+                    <div>Avg Volume: <span class="fw-semibold">52.1M</span></div>
+                    <div>Last Updated: <span id="lastUpdate">2:30:45 PM ET</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Controls -->
+    <section class="quick-controls" style="background-color: white; padding: 1.5rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <div class="d-flex justify-between align-center">
+                <div class="d-flex gap-md align-center">
+                    <div class="form-group mb-0">
+                        <label class="form-label">Expiration</label>
+                        <select class="form-control form-select" id="expirySelect" style="min-width: 180px;">
+                            <option value="2025-09-14">Sep 14, 2025 (7 days) - Vol: 145K</option>
+                            <option value="2025-09-21" selected>Sep 21, 2025 (14 days) - Vol: 287K</option>
+                            <option value="2025-10-19">Oct 19, 2025 (6 weeks) - Vol: 156K</option>
+                            <option value="2025-12-19">Dec 19, 2025 (3 months) - Vol: 89K</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="form-label">Strike Range</label>
+                        <select class="form-control form-select" id="strikeRangeSelect">
+                            <option value="all">All Strikes</option>
+                            <option value="5" selected>± $5 from current</option>
+                            <option value="10">± $10 from current</option>
+                            <option value="20">± $20 from current</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex gap-sm">
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshData()">
+                        <span class="spinner d-none" id="refreshSpinner"></span>
+                        Refresh
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportData()">Export</button>
+                    <div class="toggle-switch">
+                        <span style="font-size: 0.875rem;">Auto-refresh</span>
+                        <div class="switch active" id="autoRefreshSwitch">
+                            <div class="switch-handle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Option Chain Table -->
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="option-chain-table">
+            <!-- Calls Section -->
+            <div class="calls-section">
+                <div class="card-header text-center" style="background-color: rgba(40, 167, 69, 0.1); color: var(--success-color); font-weight: 600;">
+                    CALLS
+                </div>
+                <div class="table-container">
+                    <table class="table table-sortable" id="callsTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="volume">Vol</th>
+                                <th data-sort="oi">OI</th>
+                                <th data-sort="bid">Bid</th>
+                                <th data-sort="ask">Ask</th>
+                                <th data-sort="last">Last</th>
+                                <th data-sort="change">Chg</th>
+                                <th data-sort="iv">IV</th>
+                                <th data-sort="delta">Δ</th>
+                                <th data-sort="gamma">Γ</th>
+                                <th data-sort="theta">Θ</th>
+                                <th data-sort="vega">ν</th>
+                            </tr>
+                        </thead>
+                        <tbody id="callsTableBody">
+                            <!-- Strike $145 -->
+                            <tr class="option-row" data-strike="145" data-type="call" oncontextmenu="showContextMenu(event, 'call', 145)">
+                                <td class="volume-cell high-volume">1.2K</td>
+                                <td class="oi-cell">15.2K</td>
+                                <td class="price-cell bid-cell" data-price="6.70">6.70</td>
+                                <td class="price-cell ask-cell" data-price="6.80">6.80</td>
+                                <td class="price-cell last-cell price-up" data-price="6.75">6.75</td>
+                                <td class="change-cell positive">+0.15</td>
+                                <td class="iv-cell">24.5%</td>
+                                <td class="greek-cell delta-cell">0.67</td>
+                                <td class="greek-cell gamma-cell">0.08</td>
+                                <td class="greek-cell theta-cell">-0.12</td>
+                                <td class="greek-cell vega-cell">0.25</td>
+                            </tr>
+                            <!-- Strike $150 -->
+                            <tr class="option-row" data-strike="150" data-type="call" oncontextmenu="showContextMenu(event, 'call', 150)">
+                                <td class="volume-cell high-volume volume-spike">2.9K</td>
+                                <td class="oi-cell">22.8K</td>
+                                <td class="price-cell bid-cell" data-price="3.20">3.20</td>
+                                <td class="price-cell ask-cell" data-price="3.30">3.30</td>
+                                <td class="price-cell last-cell" data-price="3.25">3.25</td>
+                                <td class="change-cell negative">-0.05</td>
+                                <td class="iv-cell">28.2%</td>
+                                <td class="greek-cell delta-cell">0.52</td>
+                                <td class="greek-cell gamma-cell">0.12</td>
+                                <td class="greek-cell theta-cell">-0.18</td>
+                                <td class="greek-cell vega-cell">0.31</td>
+                            </tr>
+                            <!-- Strike $155 -->
+                            <tr class="option-row" data-strike="155" data-type="call" oncontextmenu="showContextMenu(event, 'call', 155)">
+                                <td class="volume-cell">756</td>
+                                <td class="oi-cell">8.9K</td>
+                                <td class="price-cell bid-cell" data-price="1.40">1.40</td>
+                                <td class="price-cell ask-cell" data-price="1.50">1.50</td>
+                                <td class="price-cell last-cell price-down" data-price="1.45">1.45</td>
+                                <td class="change-cell negative">-0.08</td>
+                                <td class="iv-cell">31.8%</td>
+                                <td class="greek-cell delta-cell">0.31</td>
+                                <td class="greek-cell gamma-cell">0.09</td>
+                                <td class="greek-cell theta-cell">-0.14</td>
+                                <td class="greek-cell vega-cell">0.22</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strikes Section -->
+            <div class="strikes-section">
+                <div class="strike-header" style="text-align: center; font-weight: 600; padding: var(--spacing-md); background-color: var(--gray-100);">
+                    Strike
+                </div>
+                <div class="strike-row">145</div>
+                <div class="strike-row at-the-money">150</div>
+                <div class="strike-row">155</div>
+            </div>
+
+            <!-- Puts Section -->
+            <div class="puts-section">
+                <div class="card-header text-center" style="background-color: rgba(220, 53, 69, 0.1); color: var(--danger-color); font-weight: 600;">
+                    PUTS
+                </div>
+                <div class="table-container">
+                    <table class="table table-sortable" id="putsTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="delta">Δ</th>
+                                <th data-sort="gamma">Γ</th>
+                                <th data-sort="theta">Θ</th>
+                                <th data-sort="vega">ν</th>
+                                <th data-sort="iv">IV</th>
+                                <th data-sort="change">Chg</th>
+                                <th data-sort="last">Last</th>
+                                <th data-sort="ask">Ask</th>
+                                <th data-sort="bid">Bid</th>
+                                <th data-sort="oi">OI</th>
+                                <th data-sort="volume">Vol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="putsTableBody">
+                            <!-- Strike $155 -->
+                            <tr class="option-row" data-strike="155" data-type="put" oncontextmenu="showContextMenu(event, 'put', 155)">
+                                <td class="greek-cell delta-cell">-0.69</td>
+                                <td class="greek-cell gamma-cell">0.08</td>
+                                <td class="greek-cell theta-cell">-0.11</td>
+                                <td class="greek-cell vega-cell">0.24</td>
+                                <td class="iv-cell">32.1%</td>
+                                <td class="change-cell positive">+0.12</td>
+                                <td class="price-cell last-cell price-up" data-price="6.95">6.95</td>
+                                <td class="price-cell ask-cell" data-price="7.00">7.00</td>
+                                <td class="price-cell bid-cell" data-price="6.90">6.90</td>
+                                <td class="oi-cell">12.1K</td>
+                                <td class="volume-cell">678</td>
+                            </tr>
+                            <!-- Strike $150 -->
+                            <tr class="option-row" data-strike="150" data-type="put" oncontextmenu="showContextMenu(event, 'put', 150)">
+                                <td class="greek-cell delta-cell">-0.48</td>
+                                <td class="greek-cell gamma-cell">0.12</td>
+                                <td class="greek-cell theta-cell">-0.17</td>
+                                <td class="greek-cell vega-cell">0.30</td>
+                                <td class="iv-cell">28.7%</td>
+                                <td class="change-cell positive">+0.18</td>
+                                <td class="price-cell last-cell price-up" data-price="3.65">3.65</td>
+                                <td class="price-cell ask-cell" data-price="3.70">3.70</td>
+                                <td class="price-cell bid-cell" data-price="3.60">3.60</td>
+                                <td class="oi-cell">19.4K</td>
+                                <td class="volume-cell high-volume">1.5K</td>
+                            </tr>
+                            <!-- Strike $145 -->
+                            <tr class="option-row" data-strike="145" data-type="put" oncontextmenu="showContextMenu(event, 'put', 145)">
+                                <td class="greek-cell delta-cell">-0.33</td>
+                                <td class="greek-cell gamma-cell">0.09</td>
+                                <td class="greek-cell theta-cell">-0.13</td>
+                                <td class="greek-cell vega-cell">0.21</td>
+                                <td class="iv-cell">25.3%</td>
+                                <td class="change-cell negative">-0.02</td>
+                                <td class="price-cell last-cell" data-price="1.85">1.85</td>
+                                <td class="price-cell ask-cell" data-price="1.90">1.90</td>
+                                <td class="price-cell bid-cell" data-price="1.80">1.80</td>
+                                <td class="oi-cell">7.8K</td>
+                                <td class="volume-cell">934</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Greeks Explanation Panel -->
+        <div class="greeks-panel mt-3" style="background-color: white; border-radius: var(--border-radius-lg); padding: var(--spacing-lg); box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 1.125rem; margin-bottom: var(--spacing-md); color: var(--gray-800);">Greeks Explanation</h3>
+            <div class="greeks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
+                <div class="greek-explanation">
+                    <div class="fw-semibold text-primary">Delta (Δ)</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">Price sensitivity to $1 stock move</div>
+                </div>
+                <div class="greek-explanation">
+                    <div class="fw-semibold text-success">Gamma (Γ)</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">Rate of Delta change</div>
+                </div>
+                <div class="greek-explanation">
+                    <div class="fw-semibold text-warning">Theta (Θ)</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">Time decay per day</div>
+                </div>
+                <div class="greek-explanation">
+                    <div class="fw-semibold text-danger">Vega (ν)</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">IV sensitivity (per 1%)</div>
+                </div>
+                <div class="greek-explanation">
+                    <div class="fw-semibold text-dark">IV</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">Implied Volatility</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <a href="#" class="context-menu-item" onclick="contextAction('buy')">Buy to Open</a>
+        <a href="#" class="context-menu-item" onclick="contextAction('sell')">Sell to Open</a>
+        <a href="#" class="context-menu-item" onclick="contextAction('details')">View Details</a>
+        <a href="#" class="context-menu-item" onclick="contextAction('analyze')">Analyze Strategy</a>
+        <a href="#" class="context-menu-item" onclick="contextAction('alert')">Set Price Alert</a>
+    </div>
+
+    <!-- Bulk Selection Panel -->
+    <div class="bulk-panel" id="bulkPanel">
+        <div class="d-flex justify-between align-center mb-3">
+            <h4 style="margin: 0;">Selected Options (<span id="selectedCount">0</span>)</h4>
+            <button class="btn btn-outline-primary btn-sm" onclick="closeBulkPanel()">×</button>
+        </div>
+        <div id="selectedOptions" style="max-height: 200px; overflow-y: auto; margin-bottom: var(--spacing-md);"></div>
+        <div class="bulk-actions">
+            <select class="form-control form-select mb-2" id="bulkStrategy">
+                <option value="">Choose Strategy</option>
+                <option value="bull_call_spread">Bull Call Spread</option>
+                <option value="bear_put_spread">Bear Put Spread</option>
+                <option value="iron_condor">Iron Condor</option>
+                <option value="straddle">Long Straddle</option>
+            </select>
+            <div class="d-flex gap-sm">
+                <button class="btn btn-primary btn-sm flex-1" onclick="executeBulkOrder()">Execute Strategy</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="clearBulkSelection()">Clear All</button>
+            </div>
+        </div>
+        <div class="strategy-summary mt-2" id="strategySummary"></div>
+    </div>
+
+    <!-- Navigation (Desktop) -->
+    <nav class="nav-tabs d-none" style="position: fixed; bottom: 2rem; right: 2rem; background: white; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: var(--spacing-sm);">
+        <a href="index.html" class="nav-tab">Home</a>
+        <a href="mobile-beginner.html" class="nav-tab">Mobile</a>
+        <button class="nav-tab active">Desktop</button>
+        <a href="filter-panel.html" class="nav-tab">Filters</a>
+    </nav>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Desktop-specific functionality
+        let contextMenuTarget = null;
+        let selectedOptions = new Set();
+        let sortState = { column: null, direction: 'asc' };
+
+        // Context menu functionality
+        function showContextMenu(event, type, strike) {
+            event.preventDefault();
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.left = event.pageX + 'px';
+            contextMenu.style.top = event.pageY + 'px';
+            contextMenu.classList.add('show');
+            
+            contextMenuTarget = { type, strike };
+            
+            // Close menu when clicking elsewhere
+            document.addEventListener('click', hideContextMenu, { once: true });
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.remove('show');
+            contextMenuTarget = null;
+        }
+
+        function contextAction(action) {
+            if (!contextMenuTarget) return;
+            
+            const { type, strike } = contextMenuTarget;
+            
+            switch (action) {
+                case 'buy':
+                    openTradeModal(type, strike, 'buy');
+                    break;
+                case 'sell':
+                    openTradeModal(type, strike, 'sell');
+                    break;
+                case 'details':
+                    showOptionDetails(type, strike);
+                    break;
+                case 'analyze':
+                    analyzeOption(type, strike);
+                    break;
+                case 'alert':
+                    setPriceAlert(type, strike);
+                    break;
+            }
+            
+            hideContextMenu();
+        }
+
+        // Table sorting
+        document.querySelectorAll('th[data-sort]').forEach(header => {
+            header.addEventListener('click', function(event) {
+                event.preventDefault();
+                sortTable(this);
+            });
+        });
+
+        function sortTable(header) {
+            const column = header.dataset.sort;
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Toggle sort direction
+            if (sortState.column === column) {
+                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.column = column;
+                sortState.direction = 'asc';
+            }
+            
+            // Update sort indicators
+            document.querySelectorAll('.sort-indicator').forEach(indicator => {
+                indicator.remove();
+            });
+            
+            const indicator = document.createElement('span');
+            indicator.className = 'sort-indicator active';
+            indicator.textContent = sortState.direction === 'asc' ? '↑' : '↓';
+            header.appendChild(indicator);
+            
+            // Sort rows
+            rows.sort((a, b) => {
+                let aValue, bValue;
+                const aCell = a.querySelector(`.${column}-cell`);
+                const bCell = b.querySelector(`.${column}-cell`);
+                
+                if (!aCell || !bCell) return 0;
+                
+                if (column === 'volume') {
+                    aValue = parseFloat(aCell.textContent.replace(/[^0-9.]/g, '')) * (aCell.textContent.includes('K') ? 1000 : 1);
+                    bValue = parseFloat(bCell.textContent.replace(/[^0-9.]/g, '')) * (bCell.textContent.includes('K') ? 1000 : 1);
+                } else {
+                    aValue = parseFloat(aCell.textContent.replace(/[^0-9.-]/g, ''));
+                    bValue = parseFloat(bCell.textContent.replace(/[^0-9.-]/g, ''));
+                }
+                
+                return sortState.direction === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+            
+            // Reorder rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Multi-selection for bulk orders
+        document.querySelectorAll('.option-row').forEach(row => {
+            row.addEventListener('click', function(event) {
+                if (event.ctrlKey || event.metaKey) {
+                    toggleRowSelection(this);
+                }
+            });
+        });
+
+        function toggleRowSelection(row) {
+            const strike = row.dataset.strike;
+            const type = row.dataset.type;
+            const key = `${type}_${strike}`;
+            
+            if (selectedOptions.has(key)) {
+                selectedOptions.delete(key);
+                row.classList.remove('selected');
+            } else {
+                selectedOptions.add(key);
+                row.classList.add('selected');
+            }
+            
+            updateBulkPanel();
+        }
+
+        function updateBulkPanel() {
+            const panel = document.getElementById('bulkPanel');
+            const count = selectedOptions.size;
+            
+            document.getElementById('selectedCount').textContent = count;
+            
+            if (count > 0) {
+                panel.classList.add('show');
+                updateSelectedOptionsList();
+            } else {
+                panel.classList.remove('show');
+            }
+        }
+
+        function updateSelectedOptionsList() {
+            const container = document.getElementById('selectedOptions');
+            container.innerHTML = '';
+            
+            selectedOptions.forEach(optionKey => {
+                const [type, strike] = optionKey.split('_');
+                const row = document.querySelector(`[data-type="${type}"][data-strike="${strike}"]`);
+                const lastPrice = row.querySelector('.last-cell').textContent;
+                
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'd-flex justify-between align-center mb-1';
+                optionDiv.innerHTML = `
+                    <span>AAPL $${strike} ${type.toUpperCase()}</span>
+                    <div>
+                        <span class="fw-bold">$${lastPrice}</span>
+                        <button class="btn btn-outline-primary btn-sm ml-1" onclick="removeFromBulkSelection('${optionKey}')">×</button>
+                    </div>
+                `;
+                container.appendChild(optionDiv);
+            });
+        }
+
+        function removeFromBulkSelection(optionKey) {
+            selectedOptions.delete(optionKey);
+            const [type, strike] = optionKey.split('_');
+            const row = document.querySelector(`[data-type="${type}"][data-strike="${strike}"]`);
+            row.classList.remove('selected');
+            updateBulkPanel();
+        }
+
+        function clearBulkSelection() {
+            selectedOptions.clear();
+            document.querySelectorAll('.option-row.selected').forEach(row => {
+                row.classList.remove('selected');
+            });
+            updateBulkPanel();
+        }
+
+        function closeBulkPanel() {
+            document.getElementById('bulkPanel').classList.remove('show');
+        }
+
+        function showBulkPanel() {
+            if (selectedOptions.size === 0) {
+                alert('Please select options by Ctrl+clicking on rows');
+                return;
+            }
+            document.getElementById('bulkPanel').classList.add('show');
+        }
+
+        // Real-time price simulation
+        function simulatePriceUpdates() {
+            const priceCells = document.querySelectorAll('.price-cell[data-price]');
+            
+            priceCells.forEach(cell => {
+                if (Math.random() < 0.08) { // 8% chance of price change
+                    const currentPrice = parseFloat(cell.dataset.price);
+                    const volatility = 0.02; // 2% max change
+                    const change = (Math.random() - 0.5) * volatility * currentPrice;
+                    const newPrice = Math.max(0.01, currentPrice + change);
+                    
+                    cell.dataset.price = newPrice.toFixed(2);
+                    cell.textContent = newPrice.toFixed(2);
+                    
+                    // Flash effect
+                    cell.classList.remove('price-up', 'price-down');
+                    if (change > 0) {
+                        cell.classList.add('price-up');
+                    } else if (change < 0) {
+                        cell.classList.add('price-down');
+                    }
+                    
+                    setTimeout(() => {
+                        cell.classList.remove('price-up', 'price-down');
+                    }, 600);
+                    
+                    // Update change values
+                    const changeCell = cell.closest('tr').querySelector('.change-cell');
+                    if (changeCell) {
+                        const changeValue = (Math.random() - 0.5) * 0.20;
+                        changeCell.textContent = (changeValue >= 0 ? '+' : '') + changeValue.toFixed(2);
+                        changeCell.className = `change-cell ${changeValue >= 0 ? 'positive' : 'negative'}`;
+                    }
+                }
+            });
+        }
+
+        // Auto-refresh functionality
+        let autoRefreshInterval;
+        const autoRefreshSwitch = document.getElementById('autoRefreshSwitch');
+        
+        autoRefreshSwitch.addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            if (this.classList.contains('active')) {
+                autoRefreshInterval = setInterval(simulatePriceUpdates, 1500);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        });
+
+        // Start auto-refresh by default
+        autoRefreshInterval = setInterval(simulatePriceUpdates, 1500);
+
+        function refreshData() {
+            const spinner = document.getElementById('refreshSpinner');
+            spinner.classList.remove('d-none');
+            
+            setTimeout(() => {
+                simulatePriceUpdates();
+                spinner.classList.add('d-none');
+                
+                // Update timestamp
+                const now = new Date();
+                document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('en-US', {
+                    timeZone: 'America/New_York',
+                    hour12: true
+                }) + ' ET';
+            }, 1000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch (event.key) {
+                    case 'r':
+                        event.preventDefault();
+                        refreshData();
+                        break;
+                    case 'f':
+                        event.preventDefault();
+                        showFilterPanel();
+                        break;
+                    case 'b':
+                        event.preventDefault();
+                        showBulkPanel();
+                        break;
+                }
+            }
+        });
+
+        // Tooltip functionality for Greeks
+        document.querySelectorAll('.greek-cell').forEach(cell => {
+            cell.addEventListener('mouseenter', function(event) {
+                showGreekTooltip(event, this);
+            });
+            
+            cell.addEventListener('mouseleave', function() {
+                hideGreekTooltip();
+            });
+        });
+
+        function showGreekTooltip(event, cell) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'greek-tooltip';
+            tooltip.style.cssText = `
+                position: fixed;
+                background: var(--gray-900);
+                color: white;
+                padding: 0.5rem;
+                border-radius: var(--border-radius);
+                font-size: 0.75rem;
+                z-index: 9999;
+                max-width: 200px;
+                box-shadow: var(--shadow-lg);
+            `;
+            
+            const column = cell.className.split(' ').find(c => c.includes('-cell')).replace('-cell', '');
+            const explanations = {
+                'delta': 'Delta measures the rate of change of the option price with respect to changes in the underlying asset price.',
+                'gamma': 'Gamma measures the rate of change in delta with respect to changes in the underlying price.',
+                'theta': 'Theta measures the rate of decline in the value of an option due to the passage of time.',
+                'vega': 'Vega measures sensitivity to changes in the volatility of the underlying asset.',
+                'iv': 'Implied Volatility is the market\'s forecast of the underlying asset\'s volatility.'
+            };
+            
+            tooltip.textContent = explanations[column] || '';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            
+            document.body.appendChild(tooltip);
+            cell._tooltip = tooltip;
+        }
+
+        function hideGreekTooltip() {
+            document.querySelectorAll('.greek-tooltip').forEach(tooltip => {
+                tooltip.remove();
+            });
+        }
+
+        function exportData() {
+            // Simulate export functionality
+            const data = [];
+            document.querySelectorAll('.option-row').forEach(row => {
+                const type = row.dataset.type;
+                const strike = row.dataset.strike;
+                const cells = row.querySelectorAll('td');
+                
+                data.push({
+                    type: type.toUpperCase(),
+                    strike: strike,
+                    // Add more fields as needed
+                });
+            });
+            
+            console.log('Exporting data:', data);
+            alert('Export functionality would download CSV file with current option chain data');
+        }
+
+        // Strategy analysis
+        function analyzeOption(type, strike) {
+            alert(`Opening strategy analyzer for AAPL $${strike} ${type.toUpperCase()} option`);
+        }
+
+        function setPriceAlert(type, strike) {
+            const price = prompt(`Set price alert for AAPL $${strike} ${type.toUpperCase()}:`);
+            if (price) {
+                alert(`Price alert set at $${price}`);
+            }
+        }
+    </script>
+
+    <style>
+        .option-row:hover {
+            background-color: rgba(0, 122, 255, 0.05);
+        }
+
+        .option-row.selected {
+            background-color: rgba(0, 122, 255, 0.1);
+        }
+
+        .high-volume {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .positive {
+            color: var(--success-color);
+        }
+
+        .negative {
+            color: var(--danger-color);
+        }
+
+        .greek-cell {
+            cursor: help;
+            font-family: 'Courier New', monospace;
+        }
+
+        .greek-cell:hover {
+            background-color: rgba(0, 122, 255, 0.1);
+        }
+
+        th[data-sort] {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        th[data-sort]:hover {
+            background-color: var(--gray-200);
+        }
+
+        .sort-indicator {
+            position: absolute;
+            right: 4px;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 1200px) {
+            .option-chain-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .calls-section,
+            .puts-section,
+            .strikes-section {
+                display: inline-block;
+                vertical-align: top;
+                white-space: normal;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-actions {
+                display: none;
+            }
+            
+            .greeks-panel {
+                display: none;
+            }
+            
+            .bulk-panel {
+                display: none;
+            }
+        }
+    </style>
+</body>
+</html>

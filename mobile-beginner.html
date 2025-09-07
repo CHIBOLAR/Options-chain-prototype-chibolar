@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAPL Options - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <button class="btn btn-outline-primary btn-sm" id="helpBtn">Help</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 1.5rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-2">
+                <div>
+                    <h1 style="font-size: 1.5rem; margin: 0; font-weight: 700;" id="stockSymbol">AAPL</h1>
+                    <p style="margin: 0; opacity: 0.8;" id="companyName">Apple Inc.</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 1.25rem; font-weight: 600;" id="stockPrice">$150.25</div>
+                    <div style="font-size: 0.875rem; opacity: 0.8;" id="stockChange">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div style="font-size: 0.875rem; opacity: 0.8;">
+                Last updated: <span id="lastUpdate">2:30 PM ET</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mode Toggle -->
+    <section class="mode-toggle" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <div class="toggle-switch d-flex justify-center align-center">
+                <span class="fw-medium">Beginner</span>
+                <div class="switch active" id="modeSwitch">
+                    <div class="switch-handle"></div>
+                </div>
+                <span class="fw-medium">Advanced</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Controls -->
+    <section class="filter-controls" style="background-color: white; padding: 1rem 0; border-bottom: 1px solid var(--gray-200);">
+        <div class="container">
+            <div class="filter-row">
+                <div class="form-group mb-0">
+                    <label class="form-label">Expiration Date</label>
+                    <select class="form-control form-select" id="expiryFilter">
+                        <option value="2025-09-14">Sep 14, 2025 (7 days)</option>
+                        <option value="2025-09-21" selected>Sep 21, 2025 (14 days)</option>
+                        <option value="2025-10-19">Oct 19, 2025 (6 weeks)</option>
+                        <option value="2025-12-19">Dec 19, 2025 (3 months)</option>
+                    </select>
+                </div>
+                <div class="form-group mb-0">
+                    <label class="form-label">Strike Range</label>
+                    <div class="range-slider">
+                        <input type="range" id="strikeRange" min="140" max="160" value="150">
+                        <div class="range-values">
+                            <span>$140</span>
+                            <span>Current: $<span id="strikeValue">150</span></span>
+                            <span>$160</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding-bottom: 80px;">
+        <!-- Options Cards -->
+        <section class="options-cards" id="optionsContainer">
+            <!-- Call Options -->
+            <div class="option-card" data-type="call" data-strike="145">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type call">CALL</span>
+                        <div class="risk-indicator risk-medium" title="Medium Risk"></div>
+                    </div>
+                    <div class="strike-price">$145</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$6.75</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">1,247</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be above <span class="fw-bold text-success">$151.75</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 145, 6.75)">
+                            Buy Call
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 145)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <!-- Swipe Actions (Mobile) -->
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 145, 6.75)">Buy</a>
+                </div>
+            </div>
+
+            <div class="option-card" data-type="call" data-strike="150">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type call">CALL</span>
+                        <div class="risk-indicator risk-high" title="High Risk"></div>
+                    </div>
+                    <div class="strike-price">$150</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$3.25</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">2,891</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be above <span class="fw-bold text-success">$153.25</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 150, 3.25)">
+                            Buy Call
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 150)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 150, 3.25)">Buy</a>
+                </div>
+            </div>
+
+            <div class="option-card" data-type="call" data-strike="155">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type call">CALL</span>
+                        <div class="risk-indicator risk-low" title="Low Risk"></div>
+                    </div>
+                    <div class="strike-price">$155</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$1.45</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">756</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be above <span class="fw-bold text-success">$156.45</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-success btn-sm flex-1" onclick="openOrderModal('call', 155, 1.45)">
+                            Buy Call
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('call', 155)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('call', 155, 1.45)">Buy</a>
+                </div>
+            </div>
+
+            <!-- Put Options -->
+            <div class="option-card" data-type="put" data-strike="145">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type put">PUT</span>
+                        <div class="risk-indicator risk-low" title="Low Risk"></div>
+                    </div>
+                    <div class="strike-price">$145</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$1.85</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">934</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be below <span class="fw-bold text-danger">$143.15</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 145, 1.85)">
+                            Buy Put
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 145)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 145, 1.85)">Buy</a>
+                </div>
+            </div>
+
+            <div class="option-card" data-type="put" data-strike="150">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type put">PUT</span>
+                        <div class="risk-indicator risk-medium" title="Medium Risk"></div>
+                    </div>
+                    <div class="strike-price">$150</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$3.65</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">1,523</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be below <span class="fw-bold text-danger">$146.35</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 150, 3.65)">
+                            Buy Put
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 150)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 150, 3.65)">Buy</a>
+                </div>
+            </div>
+
+            <div class="option-card" data-type="put" data-strike="155">
+                <div class="option-card-header">
+                    <div class="d-flex align-center">
+                        <span class="option-type put">PUT</span>
+                        <div class="risk-indicator risk-high" title="High Risk"></div>
+                    </div>
+                    <div class="strike-price">$155</div>
+                </div>
+                <div class="option-card-body">
+                    <div class="option-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Premium</div>
+                            <div class="metric-value premium">$6.95</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Volume</div>
+                            <div class="metric-value volume">678</div>
+                        </div>
+                    </div>
+                    <div class="breakeven-info mb-3" style="background-color: var(--gray-100); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                        <div class="fw-semibold">Breakeven at expiry:</div>
+                        <div>Stock needs to be below <span class="fw-bold text-danger">$148.05</span></div>
+                    </div>
+                    <div class="d-flex gap-sm">
+                        <button class="btn btn-danger btn-sm flex-1" onclick="openOrderModal('put', 155, 6.95)">
+                            Buy Put
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showOptionDetails('put', 155)">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="swipe-actions">
+                    <a href="#" class="swipe-action" onclick="openOrderModal('put', 155, 6.95)">Buy</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;">
+        <a href="index.html" class="nav-tab">Home</a>
+        <button class="nav-tab active">Options</button>
+        <a href="mobile-advanced.html" class="nav-tab">Advanced</a>
+        <a href="desktop-table.html" class="nav-tab d-none" style="display: none !important;" id="desktopTab">Desktop</a>
+    </nav>
+
+    <!-- Order Entry Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Buy Call Option</h3>
+                <button class="modal-close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-summary mb-3" style="background-color: var(--gray-100); padding: var(--spacing-md); border-radius: var(--border-radius);">
+                    <div class="d-flex justify-between mb-2">
+                        <span>Option:</span>
+                        <span class="fw-bold" id="optionSummary">AAPL $150 Call</span>
+                    </div>
+                    <div class="d-flex justify-between mb-2">
+                        <span>Premium:</span>
+                        <span class="fw-bold" id="premiumSummary">$3.25</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Expiry:</span>
+                        <span class="fw-bold">Sep 21, 2025</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantity (Contracts)</label>
+                    <div class="quantity-selector">
+                        <button type="button" class="quantity-btn" onclick="adjustQuantity(-1)">-</button>
+                        <input type="number" class="form-control quantity-input" id="quantity" value="1" min="1">
+                        <button type="button" class="quantity-btn" onclick="adjustQuantity(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Order Type</label>
+                    <select class="form-control form-select" id="orderType">
+                        <option value="market">Market Order (Execute immediately)</option>
+                        <option value="limit">Limit Order (Set price)</option>
+                    </select>
+                </div>
+
+                <div class="form-group d-none" id="limitPriceGroup">
+                    <label class="form-label">Limit Price</label>
+                    <input type="number" class="form-control" id="limitPrice" step="0.01" placeholder="Enter price">
+                </div>
+
+                <div class="order-details" style="background-color: var(--light-color); padding: var(--spacing-md); border-radius: var(--border-radius); margin-top: var(--spacing-md);">
+                    <h4 style="font-size: var(--font-size-base); margin-bottom: var(--spacing-sm);">Order Summary</h4>
+                    <div class="d-flex justify-between mb-1">
+                        <span>Total Cost:</span>
+                        <span class="fw-bold text-primary" id="totalCost">$325.00</span>
+                    </div>
+                    <div class="d-flex justify-between mb-1">
+                        <span>Max Loss:</span>
+                        <span class="fw-bold text-danger" id="maxLoss">$325.00</span>
+                    </div>
+                    <div class="d-flex justify-between">
+                        <span>Breakeven:</span>
+                        <span class="fw-bold" id="breakeven">$153.25</span>
+                    </div>
+                </div>
+
+                <div class="risk-warning mt-3" style="background-color: rgba(220, 53, 69, 0.1); border: 1px solid var(--danger-color); padding: var(--spacing-sm); border-radius: var(--border-radius); font-size: var(--font-size-sm);">
+                    ⚠️ <strong>Risk Warning:</strong> Options trading involves significant risk. You could lose your entire premium paid.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary btn-lg" id="confirmOrderBtn">Review & Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option Details Modal -->
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal modal-mobile">
+            <div class="modal-header">
+                <h3 class="modal-title" id="detailsModalTitle">Option Details</h3>
+                <button class="modal-close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="option-explanation mb-3">
+                    <h4>What is this option?</h4>
+                    <p id="optionExplanation" style="font-size: var(--font-size-sm); color: var(--gray-600);"></p>
+                </div>
+                
+                <div class="option-metrics-detailed">
+                    <div class="metric-row" style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--gray-200);">
+                        <span>Bid Price:</span>
+                        <span class="fw-bold" id="detailsBid">$3.20</span>
+                    </div>
+                    <div class="metric-row" style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--gray-200);">
+                        <span>Ask Price:</span>
+                        <span class="fw-bold" id="detailsAsk">$3.30</span>
+                    </div>
+                    <div class="metric-row" style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--gray-200);">
+                        <span>Volume:</span>
+                        <span class="fw-bold" id="detailsVolume">2,891</span>
+                    </div>
+                    <div class="metric-row" style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--gray-200);">
+                        <span>Open Interest:</span>
+                        <span class="fw-bold" id="detailsOI">15,247</span>
+                    </div>
+                    <div class="metric-row" style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0;">
+                        <span>Implied Volatility:</span>
+                        <span class="fw-bold" id="detailsIV">28.5%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" id="tradeFromDetails">Trade This Option</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

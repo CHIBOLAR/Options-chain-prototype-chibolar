@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Orders - Professional Trading - OptionTrade Pro</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">📊 OptionTrade Pro</a>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search stocks..." id="stockSearch" autocomplete="off">
+                </div>
+                <div class="header-actions d-flex gap-sm">
+                    <button class="btn btn-outline-primary btn-sm" onclick="clearAllSelections()">Clear All</button>
+                    <button class="btn btn-success btn-sm" onclick="executeStrategy()" id="executeBtn" disabled>Execute Strategy</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="saveStrategy()">Save Strategy</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stock Header -->
+    <section class="stock-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 1.5rem 0;">
+        <div class="container">
+            <div class="d-flex justify-between align-center mb-2">
+                <div>
+                    <h1 style="font-size: 1.75rem; margin: 0; font-weight: 700;">AAPL Bulk Orders</h1>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Professional multi-leg strategy builder</p>
+                </div>
+                <div class="text-right">
+                    <div style="font-size: 1.5rem; font-weight: 600;">$150.25</div>
+                    <div style="font-size: 0.875rem; opacity: 0.9;">+$1.85 (+1.25%)</div>
+                </div>
+            </div>
+            <div class="bulk-stats d-flex gap-xl" style="font-size: 0.875rem; opacity: 0.9;">
+                <div>Selected: <span id="selectedCount" class="fw-bold">0</span> options</div>
+                <div>Net Cost: <span id="netCost" class="fw-bold">$0.00</span></div>
+                <div>Max Risk: <span id="maxRisk" class="fw-bold">$0.00</span></div>
+                <div>Strategy: <span id="currentStrategy" class="fw-bold">None</span></div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <!-- Option Selection Panel -->
+            <section class="option-selection">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-between align-center">
+                        <h2 style="font-size: 1.25rem; margin: 0;">Select Options for Strategy</h2>
+                        <div class="selection-mode">
+                            <label class="d-flex align-center gap-sm">
+                                <input type="checkbox" id="multiSelectMode" onchange="toggleMultiSelect()">
+                                <span>Multi-select Mode</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="selection-help mb-3" style="background-color: var(--light-color); padding: 1rem; border-radius: var(--border-radius); font-size: 0.875rem;">
+                            💡 <strong>How to use:</strong> Click on options to add them to your strategy. Use Ctrl+Click for multi-selection. Compatible options will show suggested strategies automatically.
+                        </div>
+
+                        <!-- Quick Strategy Templates -->
+                        <div class="strategy-templates mb-3">
+                            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Quick Strategy Templates</h3>
+                            <div class="template-buttons d-flex gap-sm" style="flex-wrap: wrap;">
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('bull_call_spread')">Bull Call Spread</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('bear_put_spread')">Bear Put Spread</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('iron_condor')">Iron Condor</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('long_straddle')">Long Straddle</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('short_strangle')">Short Strangle</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="buildStrategy('butterfly')">Butterfly</button>
+                            </div>
+                        </div>
+
+                        <!-- Options Table -->
+                        <div class="table-container">
+                            <table class="table" id="optionsSelectionTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;"></th>
+                                        <th>Type</th>
+                                        <th>Strike</th>
+                                        <th>Expiry</th>
+                                        <th>Bid</th>
+                                        <th>Ask</th>
+                                        <th>Last</th>
+                                        <th>Volume</th>
+                                        <th>IV</th>
+                                        <th>Delta</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sample options for selection -->
+                                    <tr class="option-row" data-option-id="call_145" data-type="call" data-strike="145" data-last="6.75" data-delta="0.67">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="call_145"></td>
+                                        <td><span class="option-type call">C</span></td>
+                                        <td class="fw-bold">145</td>
+                                        <td>Sep 21</td>
+                                        <td>6.70</td>
+                                        <td>6.80</td>
+                                        <td class="last-price">6.75</td>
+                                        <td>1.2K</td>
+                                        <td>24.5%</td>
+                                        <td>0.67</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr class="option-row" data-option-id="call_150" data-type="call" data-strike="150" data-last="3.25" data-delta="0.52">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="call_150"></td>
+                                        <td><span class="option-type call">C</span></td>
+                                        <td class="fw-bold">150</td>
+                                        <td>Sep 21</td>
+                                        <td>3.20</td>
+                                        <td>3.30</td>
+                                        <td class="last-price">3.25</td>
+                                        <td>2.9K</td>
+                                        <td>28.2%</td>
+                                        <td>0.52</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr class="option-row" data-option-id="call_155" data-type="call" data-strike="155" data-last="1.45" data-delta="0.31">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="call_155"></td>
+                                        <td><span class="option-type call">C</span></td>
+                                        <td class="fw-bold">155</td>
+                                        <td>Sep 21</td>
+                                        <td>1.40</td>
+                                        <td>1.50</td>
+                                        <td class="last-price">1.45</td>
+                                        <td>756</td>
+                                        <td>31.8%</td>
+                                        <td>0.31</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr class="separator-row">
+                                        <td colspan="11" style="background-color: var(--gray-200); text-align: center; font-weight: 600; color: var(--primary-color); font-size: var(--font-size-sm); padding: 0.5rem;">
+                                            Current Stock Price: $150.25
+                                        </td>
+                                    </tr>
+                                    <tr class="option-row" data-option-id="put_155" data-type="put" data-strike="155" data-last="6.95" data-delta="-0.69">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="put_155"></td>
+                                        <td><span class="option-type put">P</span></td>
+                                        <td class="fw-bold">155</td>
+                                        <td>Sep 21</td>
+                                        <td>6.90</td>
+                                        <td>7.00</td>
+                                        <td class="last-price">6.95</td>
+                                        <td>678</td>
+                                        <td>32.1%</td>
+                                        <td>-0.69</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr class="option-row" data-option-id="put_150" data-type="put" data-strike="150" data-last="3.65" data-delta="-0.48">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="put_150"></td>
+                                        <td><span class="option-type put">P</span></td>
+                                        <td class="fw-bold">150</td>
+                                        <td>Sep 21</td>
+                                        <td>3.60</td>
+                                        <td>3.70</td>
+                                        <td class="last-price">3.65</td>
+                                        <td>1.5K</td>
+                                        <td>28.7%</td>
+                                        <td>-0.48</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr class="option-row" data-option-id="put_145" data-type="put" data-strike="145" data-last="1.85" data-delta="-0.33">
+                                        <td><input type="checkbox" class="option-checkbox" onchange="selectOption(this)" data-option-id="put_145"></td>
+                                        <td><span class="option-type put">P</span></td>
+                                        <td class="fw-bold">145</td>
+                                        <td>Sep 21</td>
+                                        <td>1.80</td>
+                                        <td>1.90</td>
+                                        <td class="last-price">1.85</td>
+                                        <td>934</td>
+                                        <td>25.3%</td>
+                                        <td>-0.33</td>
+                                        <td>
+                                            <select class="form-control form-select action-select" disabled>
+                                                <option value="buy">Buy</option>
+                                                <option value="sell">Sell</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Strategy Builder Panel -->
+            <section class="strategy-builder">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 style="font-size: 1.125rem; margin: 0;">Strategy Builder</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="selected-options" id="selectedOptionsContainer">
+                            <div class="empty-state" id="emptyState" style="text-align: center; color: var(--gray-500); padding: 2rem 0;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+                                <div>No options selected</div>
+                                <div style="font-size: 0.875rem;">Click on options to start building your strategy</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-controls d-none" id="strategyControls">
+                            <div class="form-group">
+                                <label class="form-label">Strategy Type</label>
+                                <select class="form-control form-select" id="strategyType" onchange="updateStrategy()">
+                                    <option value="">Auto-detect</option>
+                                    <option value="bull_call_spread">Bull Call Spread</option>
+                                    <option value="bear_put_spread">Bear Put Spread</option>
+                                    <option value="iron_condor">Iron Condor</option>
+                                    <option value="long_straddle">Long Straddle</option>
+                                    <option value="short_strangle">Short Strangle</option>
+                                    <option value="custom">Custom Strategy</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Quantity (per leg)</label>
+                                <div class="quantity-selector">
+                                    <button type="button" class="quantity-btn" onclick="adjustStrategyQuantity(-1)">-</button>
+                                    <input type="number" class="form-control quantity-input" id="strategyQuantity" value="1" min="1" max="100" onchange="updateStrategy()">
+                                    <button type="button" class="quantity-btn" onclick="adjustStrategyQuantity(1)">+</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Order Type</label>
+                                <select class="form-control form-select" id="strategyOrderType" onchange="updateStrategy()">
+                                    <option value="market">Market Order (All legs)</option>
+                                    <option value="limit">Net Debit/Credit Limit</option>
+                                    <option value="individual">Individual Leg Limits</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group d-none" id="netLimitGroup">
+                                <label class="form-label">Net Limit Price</label>
+                                <div class="d-flex gap-sm align-center">
+                                    <input type="number" class="form-control" id="netLimitPrice" step="0.01" placeholder="0.00" onchange="updateStrategy()">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="setNetMid()">Mid</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategy Analysis -->
+                <div class="card" id="strategyAnalysis" style="display: none;">
+                    <div class="card-header">
+                        <h3 style="font-size: 1.125rem; margin: 0;">Strategy Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="analysis-metrics">
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Net Cost:</span>
+                                <span class="fw-bold" id="analysisCost">$0.00</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Max Profit:</span>
+                                <span class="fw-bold text-success" id="maxProfit">$0.00</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Max Loss:</span>
+                                <span class="fw-bold text-danger" id="maxLoss">$0.00</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Breakeven Points:</span>
+                                <span class="fw-bold" id="breakevenPoints">N/A</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between mb-2">
+                                <span>Profit Probability:</span>
+                                <span class="fw-bold" id="profitProbability">N/A</span>
+                            </div>
+                            <div class="metric-row d-flex justify-between">
+                                <span>Risk/Reward Ratio:</span>
+                                <span class="fw-bold" id="riskReward">N/A</span>
+                            </div>
+                        </div>
+
+                        <div class="profit-loss-chart mt-3" style="background-color: var(--gray-100); height: 200px; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: var(--gray-500);">
+                            📈 P&L Chart<br>
+                            <small>(Visual representation of profit/loss at expiration)</small>
+                        </div>
+
+                        <div class="strategy-description mt-3" id="strategyDescription">
+                            <h4 style="font-size: 0.875rem; margin-bottom: 0.5rem;">Strategy Description</h4>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0;" id="descriptionText">
+                                Select options to see strategy analysis and description.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Execution Summary -->
+        <section class="execution-summary mt-3" id="executionSummary" style="display: none;">
+            <div class="card">
+                <div class="card-header" style="background-color: rgba(40, 167, 69, 0.1); color: var(--success-color);">
+                    <h3 style="font-size: 1.125rem; margin: 0;">Ready to Execute</h3>
+                </div>
+                <div class="card-body">
+                    <div class="execution-details">
+                        <div class="order-legs mb-3" id="orderLegsDetail">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                        
+                        <div class="execution-totals" style="background-color: var(--gray-100); padding: 1rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                            <div class="d-flex justify-between mb-2">
+                                <span>Total Premium:</span>
+                                <span class="fw-bold text-primary" id="totalPremium">$0.00</span>
+                            </div>
+                            <div class="d-flex justify-between mb-2">
+                                <span>Commission (est.):</span>
+                                <span class="fw-bold" id="estimatedCommission">$6.50</span>
+                            </div>
+                            <div class="d-flex justify-between">
+                                <span>Net Cost:</span>
+                                <span class="fw-bold text-success" id="finalNetCost">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="risk-disclosure" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid var(--warning-color); padding: 1rem; border-radius: var(--border-radius); font-size: 0.875rem;">
+                            ⚠️ <strong>Risk Disclosure:</strong> Options trading involves significant risk. Multi-leg strategies may be difficult to adjust or close before expiration. Market conditions can affect execution quality.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Strategy Templates Modal -->
+    <div class="modal-overlay" id="templateModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="templateModalTitle">Bull Call Spread</h3>
+                <button class="modal-close" onclick="closeTemplateModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="templateModalBody">
+                <!-- Content populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" onclick="closeTemplateModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="applyTemplate()">Apply Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execution Confirmation Modal -->
+    <div class="modal-overlay" id="executionModal">
+        <div class="modal">
+            <div class="modal-header" style="background-color: rgba(40, 167, 69, 0.1); color: var(--success-color);">
+                <h3 class="modal-title">✅ Strategy Executed Successfully</h3>
+                <button class="modal-close" onclick="closeExecutionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="execution-success text-center mb-3">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🎉</div>
+                    <div>Your multi-leg options strategy has been executed!</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.5rem;">
+                        Order ID: <strong>STRAT-<span id="strategyOrderId"></span></strong>
+                    </div>
+                </div>
+                
+                <div class="executed-legs" id="executedLegsDetails">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" onclick="viewPositions()">View Positions</button>
+                <button class="btn btn-primary" onclick="closeExecutionModal()">Continue Trading</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        let selectedOptions = new Map();
+        let currentStrategyType = '';
+        let strategyQuantity = 1;
+
+        function selectOption(checkbox) {
+            const optionId = checkbox.dataset.optionId;
+            const row = checkbox.closest('.option-row');
+            const actionSelect = row.querySelector('.action-select');
+            
+            if (checkbox.checked) {
+                const optionData = {
+                    id: optionId,
+                    type: row.dataset.type,
+                    strike: parseInt(row.dataset.strike),
+                    last: parseFloat(row.dataset.last),
+                    delta: parseFloat(row.dataset.delta),
+                    action: 'buy' // default
+                };
+                
+                selectedOptions.set(optionId, optionData);
+                row.classList.add('selected');
+                actionSelect.disabled = false;
+                
+                // Add event listener for action change
+                actionSelect.onchange = function() {
+                    selectedOptions.get(optionId).action = this.value;
+                    updateStrategyBuilder();
+                };
+                
+            } else {
+                selectedOptions.delete(optionId);
+                row.classList.remove('selected');
+                actionSelect.disabled = true;
+                actionSelect.value = 'buy';
+            }
+            
+            updateStrategyBuilder();
+            updateExecutionState();
+        }
+
+        function updateStrategyBuilder() {
+            const container = document.getElementById('selectedOptionsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const controls = document.getElementById('strategyControls');
+            const analysis = document.getElementById('strategyAnalysis');
+            
+            if (selectedOptions.size === 0) {
+                emptyState.style.display = 'block';
+                controls.classList.add('d-none');
+                analysis.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            controls.classList.remove('d-none');
+            analysis.style.display = 'block';
+            
+            // Update selected options display
+            container.innerHTML = '';
+            let netCost = 0;
+            
+            selectedOptions.forEach((option, id) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'selected-option-item d-flex justify-between align-center mb-2';
+                optionDiv.style.cssText = 'padding: 0.75rem; border: 1px solid var(--gray-200); border-radius: var(--border-radius);';
+                
+                const cost = option.action === 'buy' ? -option.last : option.last;
+                netCost += cost * strategyQuantity;
+                
+                optionDiv.innerHTML = `
+                    <div>
+                        <div class="fw-semibold">
+                            ${option.action.toUpperCase()} AAPL $${option.strike} ${option.type.toUpperCase()}
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--gray-600);">
+                            ${cost > 0 ? 'Credit' : 'Debit'}: $${Math.abs(cost * strategyQuantity).toFixed(2)}
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="removeOption('${id}')">×</button>
+                    </div>
+                `;
+                
+                container.appendChild(optionDiv);
+            });
+            
+            // Auto-detect strategy
+            detectStrategy();
+            
+            // Update analysis
+            updateAnalysis(netCost);
+            
+            // Update header stats
+            document.getElementById('selectedCount').textContent = selectedOptions.size;
+            document.getElementById('netCost').textContent = (netCost < 0 ? '-$' : '$') + Math.abs(netCost).toFixed(2);
+            document.getElementById('maxRisk').textContent = '$' + Math.abs(Math.min(0, netCost)).toFixed(2);
+            document.getElementById('currentStrategy').textContent = currentStrategyType || 'Custom';
+        }
+
+        function detectStrategy() {
+            const options = Array.from(selectedOptions.values());
+            
+            if (options.length === 2) {
+                const calls = options.filter(opt => opt.type === 'call');
+                const puts = options.filter(opt => opt.type === 'put');
+                
+                if (calls.length === 2) {
+                    const [lower, higher] = calls.sort((a, b) => a.strike - b.strike);
+                    if (lower.action === 'buy' && higher.action === 'sell') {
+                        currentStrategyType = 'Bull Call Spread';
+                    } else if (lower.action === 'sell' && higher.action === 'buy') {
+                        currentStrategyType = 'Bear Call Spread';
+                    }
+                } else if (puts.length === 2) {
+                    const [lower, higher] = puts.sort((a, b) => a.strike - b.strike);
+                    if (lower.action === 'sell' && higher.action === 'buy') {
+                        currentStrategyType = 'Bull Put Spread';
+                    } else if (lower.action === 'buy' && higher.action === 'sell') {
+                        currentStrategyType = 'Bear Put Spread';
+                    }
+                } else if (calls.length === 1 && puts.length === 1) {
+                    const call = calls[0];
+                    const put = puts[0];
+                    if (call.strike === put.strike) {
+                        if (call.action === 'buy' && put.action === 'buy') {
+                            currentStrategyType = 'Long Straddle';
+                        } else if (call.action === 'sell' && put.action === 'sell') {
+                            currentStrategyType = 'Short Straddle';
+                        }
+                    } else {
+                        if (call.action === 'sell' && put.action === 'sell') {
+                            currentStrategyType = 'Short Strangle';
+                        } else if (call.action === 'buy' && put.action === 'buy') {
+                            currentStrategyType = 'Long Strangle';
+                        }
+                    }
+                }
+            } else if (options.length === 4) {
+                // Detect Iron Condor or Butterfly
+                const calls = options.filter(opt => opt.type === 'call').sort((a, b) => a.strike - b.strike);
+                const puts = options.filter(opt => opt.type === 'put').sort((a, b) => a.strike - b.strike);
+                
+                if (calls.length === 2 && puts.length === 2) {
+                    currentStrategyType = 'Iron Condor';
+                }
+            } else {
+                currentStrategyType = 'Custom Strategy';
+            }
+            
+            // Update strategy type dropdown
+            const strategySelect = document.getElementById('strategyType');
+            const customOption = Array.from(strategySelect.options).find(opt => opt.text === currentStrategyType);
+            if (customOption) {
+                strategySelect.value = customOption.value;
+            } else {
+                strategySelect.value = 'custom';
+            }
+        }
+
+        function updateAnalysis(netCost) {
+            const analysis = {
+                cost: netCost,
+                maxProfit: calculateMaxProfit(),
+                maxLoss: calculateMaxLoss(netCost),
+                breakevens: calculateBreakevens(),
+                profitProbability: calculateProfitProbability(),
+                riskReward: calculateRiskReward()
+            };
+            
+            document.getElementById('analysisCost').textContent = (netCost < 0 ? '-$' : '$') + Math.abs(netCost).toFixed(2);
+            document.getElementById('maxProfit').textContent = '$' + analysis.maxProfit.toFixed(2);
+            document.getElementById('maxLoss').textContent = '$' + analysis.maxLoss.toFixed(2);
+            document.getElementById('breakevenPoints').textContent = analysis.breakevens.map(b => '$' + b.toFixed(2)).join(', ') || 'N/A';
+            document.getElementById('profitProbability').textContent = analysis.profitProbability + '%';
+            document.getElementById('riskReward').textContent = analysis.riskReward;
+            
+            // Update strategy description
+            updateStrategyDescription();
+        }
+
+        function calculateMaxProfit() {
+            // Simplified calculation - in reality this would be much more complex
+            const options = Array.from(selectedOptions.values());
+            if (currentStrategyType.includes('Spread')) {
+                const strikes = options.map(opt => opt.strike);
+                const strikeWidth = Math.max(...strikes) - Math.min(...strikes);
+                return strikeWidth * 100 * strategyQuantity; // Simplified
+            }
+            return 1000; // Unlimited for some strategies
+        }
+
+        function calculateMaxLoss(netCost) {
+            return Math.abs(Math.min(0, netCost));
+        }
+
+        function calculateBreakevens() {
+            const options = Array.from(selectedOptions.values());
+            if (options.length === 2 && currentStrategyType.includes('Straddle')) {
+                const strike = options[0].strike;
+                const totalPremium = options.reduce((sum, opt) => sum + opt.last, 0);
+                return [strike - totalPremium, strike + totalPremium];
+            }
+            return [150]; // Simplified
+        }
+
+        function calculateProfitProbability() {
+            // Simplified calculation based on delta
+            const options = Array.from(selectedOptions.values());
+            const avgDelta = options.reduce((sum, opt) => sum + Math.abs(opt.delta), 0) / options.length;
+            return Math.round(avgDelta * 100);
+        }
+
+        function calculateRiskReward() {
+            const maxProfit = calculateMaxProfit();
+            const maxLoss = calculateMaxLoss(0);
+            if (maxLoss === 0) return 'Unlimited';
+            return (maxProfit / maxLoss).toFixed(2) + ':1';
+        }
+
+        function updateStrategyDescription() {
+            const descriptions = {
+                'Bull Call Spread': 'A moderately bullish strategy using two call options. Buy a lower strike call and sell a higher strike call. Profits if stock moves up moderately.',
+                'Bear Put Spread': 'A moderately bearish strategy using two put options. Buy a higher strike put and sell a lower strike put. Profits if stock moves down moderately.',
+                'Long Straddle': 'A volatility strategy expecting big moves in either direction. Buy both a call and put at the same strike. Profits from large price movements.',
+                'Iron Condor': 'A neutral strategy expecting low volatility. Profits if stock stays within a trading range. Limited profit and loss potential.',
+                'Custom Strategy': 'A custom combination of options. Review the risk metrics and P&L profile carefully before execution.'
+            };
+            
+            document.getElementById('descriptionText').textContent = descriptions[currentStrategyType] || descriptions['Custom Strategy'];
+        }
+
+        function removeOption(optionId) {
+            const checkbox = document.querySelector(`[data-option-id="${optionId}"]`);
+            checkbox.checked = false;
+            selectOption(checkbox);
+        }
+
+        function adjustStrategyQuantity(change) {
+            strategyQuantity = Math.max(1, Math.min(100, strategyQuantity + change));
+            document.getElementById('strategyQuantity').value = strategyQuantity;
+            updateStrategyBuilder();
+        }
+
+        function updateExecutionState() {
+            const executeBtn = document.getElementById('executeBtn');
+            const executionSummary = document.getElementById('executionSummary');
+            
+            if (selectedOptions.size > 0) {
+                executeBtn.disabled = false;
+                executionSummary.style.display = 'block';
+                updateExecutionSummary();
+            } else {
+                executeBtn.disabled = true;
+                executionSummary.style.display = 'none';
+            }
+        }
+
+        function updateExecutionSummary() {
+            const container = document.getElementById('orderLegsDetail');
+            container.innerHTML = '';
+            
+            let totalPremium = 0;
+            
+            selectedOptions.forEach((option, id) => {
+                const legDiv = document.createElement('div');
+                legDiv.className = 'order-leg d-flex justify-between mb-2';
+                legDiv.style.cssText = 'padding: 0.5rem 0; border-bottom: 1px solid var(--gray-200);';
+                
+                const cost = option.action === 'buy' ? option.last : -option.last;
+                totalPremium += cost * strategyQuantity;
+                
+                legDiv.innerHTML = `
+                    <div>
+                        <strong>${option.action.toUpperCase()}</strong> ${strategyQuantity} × AAPL $${option.strike} ${option.type.toUpperCase()}
+                    </div>
+                    <div class="fw-bold">
+                        ${cost > 0 ? '+' : ''}$${(cost * strategyQuantity * 100).toFixed(2)}
+                    </div>
+                `;
+                
+                container.appendChild(legDiv);
+            });
+            
+            const totalCost = totalPremium * 100;
+            document.getElementById('totalPremium').textContent = (totalCost < 0 ? '-$' : '$') + Math.abs(totalCost).toFixed(2);
+            document.getElementById('finalNetCost').textContent = (totalCost < 0 ? '-$' : '$') + Math.abs(totalCost - 6.50).toFixed(2);
+        }
+
+        // Strategy template functions
+        function buildStrategy(strategyType) {
+            clearAllSelections();
+            
+            switch (strategyType) {
+                case 'bull_call_spread':
+                    selectOptionById('call_145', 'buy');
+                    selectOptionById('call_155', 'sell');
+                    break;
+                case 'bear_put_spread':
+                    selectOptionById('put_155', 'buy');
+                    selectOptionById('put_145', 'sell');
+                    break;
+                case 'iron_condor':
+                    selectOptionById('put_145', 'sell');
+                    selectOptionById('put_150', 'buy');
+                    selectOptionById('call_150', 'buy');
+                    selectOptionById('call_155', 'sell');
+                    break;
+                case 'long_straddle':
+                    selectOptionById('call_150', 'buy');
+                    selectOptionById('put_150', 'buy');
+                    break;
+                case 'short_strangle':
+                    selectOptionById('call_155', 'sell');
+                    selectOptionById('put_145', 'sell');
+                    break;
+                case 'butterfly':
+                    selectOptionById('call_145', 'buy');
+                    selectOptionById('call_150', 'sell');
+                    selectOptionById('call_150', 'sell'); // This would need handling for same strike
+                    selectOptionById('call_155', 'buy');
+                    break;
+            }
+        }
+
+        function selectOptionById(optionId, action) {
+            const checkbox = document.querySelector(`[data-option-id="${optionId}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                selectOption(checkbox);
+                const row = checkbox.closest('.option-row');
+                const actionSelect = row.querySelector('.action-select');
+                actionSelect.value = action;
+                actionSelect.onchange();
+            }
+        }
+
+        function clearAllSelections() {
+            selectedOptions.clear();
+            document.querySelectorAll('.option-checkbox:checked').forEach(checkbox => {
+                checkbox.checked = false;
+                selectOption(checkbox);
+            });
+        }
+
+        function executeStrategy() {
+            if (selectedOptions.size === 0) {
+                alert('Please select options first');
+                return;
+            }
+            
+            // Generate order ID
+            const orderId = Math.random().toString(36).substr(2, 8).toUpperCase();
+            document.getElementById('strategyOrderId').textContent = orderId;
+            
+            // Update executed legs details
+            const container = document.getElementById('executedLegsDetails');
+            container.innerHTML = '';
+            
+            selectedOptions.forEach((option, id) => {
+                const legDiv = document.createElement('div');
+                legDiv.className = 'executed-leg';
+                legDiv.style.cssText = 'padding: 0.5rem; background-color: rgba(40, 167, 69, 0.1); border-radius: var(--border-radius); margin-bottom: 0.5rem;';
+                
+                legDiv.innerHTML = `
+                    <div class="d-flex justify-between">
+                        <span>✅ ${option.action.toUpperCase()} ${strategyQuantity} × AAPL $${option.strike} ${option.type.toUpperCase()}</span>
+                        <span class="fw-bold">FILLED @ $${option.last}</span>
+                    </div>
+                `;
+                
+                container.appendChild(legDiv);
+            });
+            
+            document.getElementById('executionModal').classList.add('show');
+        }
+
+        function saveStrategy() {
+            if (selectedOptions.size === 0) {
+                alert('Please select options first');
+                return;
+            }
+            
+            const name = prompt('Enter a name for this strategy:');
+            if (name) {
+                alert(`Strategy "${name}" saved! You can load it from your saved strategies later.`);
+            }
+        }
+
+        function closeTemplateModal() {
+            document.getElementById('templateModal').classList.remove('show');
+        }
+
+        function closeExecutionModal() {
+            document.getElementById('executionModal').classList.remove('show');
+            clearAllSelections();
+        }
+
+        function viewPositions() {
+            alert('This would navigate to your positions page showing the new strategy');
+            closeExecutionModal();
+        }
+
+        // Initialize
+        updateStrategyBuilder();
+    </script>
+</body>
+</html>
