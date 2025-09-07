@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSE Option Chain - NIFTY 50 | Professional Trading Interface</title>
+    <link rel="stylesheet" href="assets/css/nse-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://www.nseindia.com/favicon.ico">
+</head>
+<body>
+    <!-- Header -->
+    <header class="nse-header">
+        <div class="container">
+            <div class="header-left">
+                <div class="logo">
+                    <img src="https://www.nseindia.com/static/images/nse_logo.png" alt="NSE" height="32">
+                    <span class="divider">|</span>
+                    <h1>Option Chain</h1>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="market-status">
+                    <span class="status-indicator live"></span>
+                    <span class="status-text">Market Open</span>
+                    <span class="time">15:30 IST</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="indices-ticker">
+                    <div class="index-item">
+                        <span class="index-name">NIFTY 50</span>
+                        <span class="index-value">24,413.50</span>
+                        <span class="index-change positive">+156.75 (+0.65%)</span>
+                    </div>
+                    <div class="index-item">
+                        <span class="index-name">BANK NIFTY</span>
+                        <span class="index-value">52,745.30</span>
+                        <span class="index-change negative">-248.60 (-0.47%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Controls -->
+    <section class="controls-section">
+        <div class="container">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label>Select Underlying</label>
+                    <select class="nse-select" id="underlyingSelect">
+                        <option value="NIFTY" selected>NIFTY 50</option>
+                        <option value="BANKNIFTY">BANK NIFTY</option>
+                        <option value="FINNIFTY">FIN NIFTY</option>
+                        <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
+                        <option value="RELIANCE">RELIANCE</option>
+                        <option value="TCS">TCS</option>
+                        <option value="INFY">INFOSYS</option>
+                        <option value="HDFCBANK">HDFC BANK</option>
+                        <option value="ICICIBANK">ICICI BANK</option>
+                        <option value="SBIN">SBI</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Expiry Date</label>
+                    <select class="nse-select" id="expirySelect">
+                        <option value="2025-09-12">12-Sep-2025 (2 Days)</option>
+                        <option value="2025-09-19" selected>19-Sep-2025 (9 Days)</option>
+                        <option value="2025-09-26">26-Sep-2025 (16 Days)</option>
+                        <option value="2025-10-31">31-Oct-2025 (51 Days)</option>
+                        <option value="2025-12-26">26-Dec-2025 (107 Days)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Strike Range</label>
+                    <select class="nse-select" id="strikeRange">
+                        <option value="20">±20 Strikes</option>
+                        <option value="30" selected>±30 Strikes</option>
+                        <option value="40">±40 Strikes</option>
+                        <option value="all">All Strikes</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <button class="refresh-btn" onclick="refreshOptionChain()">
+                        <span class="refresh-icon">↻</span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Summary -->
+    <section class="market-summary">
+        <div class="container">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-title">Put Call Ratio (PCR)</div>
+                    <div class="card-value" id="pcrValue">0.87</div>
+                    <div class="card-subtitle">OI Based</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">Max Pain</div>
+                    <div class="card-value" id="maxPain">24,400</div>
+                    <div class="card-subtitle">Strike Price</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">ATM IV</div>
+                    <div class="card-value" id="atmIV">12.45%</div>
+                    <div class="card-subtitle">Implied Volatility</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">Total OI</div>
+                    <div class="card-value" id="totalOI">1.47 Cr</div>
+                    <div class="card-subtitle">Contracts</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">Total Volume</div>
+                    <div class="card-value" id="totalVolume">45.2 L</div>
+                    <div class="card-subtitle">Today</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Option Chain Table -->
+    <main class="option-chain-container">
+        <div class="container">
+            <!-- Table Controls -->
+            <div class="table-controls">
+                <div class="view-options">
+                    <button class="view-btn active" data-view="all">All Options</button>
+                    <button class="view-btn" data-view="calls">Calls Only</button>
+                    <button class="view-btn" data-view="puts">Puts Only</button>
+                    <button class="view-btn" data-view="itm">ITM Options</button>
+                </div>
+                <div class="table-settings">
+                    <button class="settings-btn">⚙️ Table Settings</button>
+                    <button class="export-btn">📊 Export Data</button>
+                </div>
+            </div>
+
+            <!-- Main Option Chain Table -->
+            <div class="option-chain-wrapper">
+                <table class="option-chain-table" id="optionChainTable">
+                    <thead>
+                        <tr class="header-row">
+                            <!-- Call Options Headers -->
+                            <th colspan="9" class="calls-header">CALLS</th>
+                            <!-- Strike Price Header -->
+                            <th rowspan="2" class="strike-header">STRIKE<br>PRICE</th>
+                            <!-- Put Options Headers -->
+                            <th colspan="9" class="puts-header">PUTS</th>
+                        </tr>
+                        <tr class="sub-header-row">
+                            <!-- Call Options Sub-headers -->
+                            <th class="sortable" data-sort="call_oi">OI</th>
+                            <th class="sortable" data-sort="call_chg_oi">Chg in OI</th>
+                            <th class="sortable" data-sort="call_volume">Volume</th>
+                            <th class="sortable" data-sort="call_iv">IV (%)</th>
+                            <th class="sortable" data-sort="call_ltp">LTP</th>
+                            <th class="sortable" data-sort="call_chg">Net Chg</th>
+                            <th class="sortable" data-sort="call_bid_qty">Bid Qty</th>
+                            <th class="sortable" data-sort="call_bid">Bid</th>
+                            <th class="sortable" data-sort="call_ask">Ask</th>
+                            
+                            <!-- Put Options Sub-headers -->
+                            <th class="sortable" data-sort="put_ask">Ask</th>
+                            <th class="sortable" data-sort="put_bid">Bid</th>
+                            <th class="sortable" data-sort="put_bid_qty">Bid Qty</th>
+                            <th class="sortable" data-sort="put_chg">Net Chg</th>
+                            <th class="sortable" data-sort="put_ltp">LTP</th>
+                            <th class="sortable" data-sort="put_iv">IV (%)</th>
+                            <th class="sortable" data-sort="put_volume">Volume</th>
+                            <th class="sortable" data-sort="put_chg_oi">Chg in OI</th>
+                            <th class="sortable" data-sort="put_oi">OI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="optionChainBody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Greeks Table (Toggle View) -->
+            <div class="greeks-section" id="greeksSection" style="display: none;">
+                <div class="section-header">
+                    <h3>Option Greeks</h3>
+                    <button class="toggle-greeks" onclick="toggleGreeks()">Hide Greeks</button>
+                </div>
+                <div class="greeks-wrapper">
+                    <table class="greeks-table" id="greeksTable">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Strike</th>
+                                <th colspan="4">CALLS</th>
+                                <th colspan="4">PUTS</th>
+                            </tr>
+                            <tr>
+                                <th>Delta</th>
+                                <th>Gamma</th>
+                                <th>Theta</th>
+                                <th>Vega</th>
+                                <th>Delta</th>
+                                <th>Gamma</th>
+                                <th>Theta</th>
+                                <th>Vega</th>
+                            </tr>
+                        </thead>
+                        <tbody id="greeksTableBody">
+                            <!-- Greeks data will be populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Action Bar -->
+    <div class="action-bar">
+        <div class="container">
+            <div class="action-items">
+                <button class="action-btn" onclick="toggleGreeks()">
+                    <span class="icon">📈</span>
+                    <span class="text">Greeks</span>
+                </button>
+                <button class="action-btn" onclick="showAnalysis()">
+                    <span class="icon">📊</span>
+                    <span class="text">Analysis</span>
+                </button>
+                <button class="action-btn" onclick="showStrategies()">
+                    <span class="icon">⚡</span>
+                    <span class="text">Strategies</span>
+                </button>
+                <button class="action-btn" onclick="showAlerts()">
+                    <span class="icon">🔔</span>
+                    <span class="text">Alerts</span>
+                </button>
+                <button class="action-btn premium" onclick="showPremiumFeatures()">
+                    <span class="icon">⭐</span>
+                    <span class="text">Pro Tools</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Panel (Hidden by default) -->
+    <div class="analysis-panel" id="analysisPanel" style="display: none;">
+        <div class="panel-content">
+            <h3>Option Chain Analysis</h3>
+            <div class="analysis-charts">
+                <div class="chart-container">
+                    <canvas id="oiChart" width="400" height="200"></canvas>
+                    <div class="chart-title">Open Interest Distribution</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="volumeChart" width="400" height="200"></canvas>
+                    <div class="chart-title">Volume Distribution</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="nse-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="disclaimer">
+                    <p><strong>Disclaimer:</strong> This is a prototype interface. Real NSE data requires authorized access. 
+                    Options trading involves substantial risk and is not suitable for all investors. 
+                    Past performance does not guarantee future results.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Terms of Use</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">NSE Circulars</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/nse-app.js"></script>
+</body>
+</html>
